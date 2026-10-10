@@ -456,11 +456,27 @@ h1 {
 }
 .card:hover { border-color: rgba(255, 255, 255, 0.3); }
 
+/* Başlığın altında soldan sağa çizilen ince çizgi */
+.rule {
+  display: block;
+  height: 1px;
+  margin: -0.75rem 0 2rem;
+  background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.25) 40%, transparent);
+  transform: scaleX(var(--e));
+  transform-origin: left;
+}
+
+/* Kartlar eğik durumdan açılırken ilki soldan, ikincisi sağdan yerine kayar (--from) */
 .tilt {
   opacity: var(--e);
-  transform: rotateX(calc((1 - var(--e)) * 24deg)) scale(calc(0.84 + var(--e) * 0.16));
+  transform:
+    translateX(calc(var(--from, 0) * (1 - var(--e)) * 70px))
+    rotateX(calc((1 - var(--e)) * 24deg))
+    scale(calc(0.84 + var(--e) * 0.16));
   transform-origin: center top;
 }
+.projects .card:nth-child(1) { --from: -1; }
+.projects .card:nth-child(2) { --from: 1; }
 
 .card-body { display: flex; flex-direction: column; gap: 14px; padding: 40px; }
 .card-body h3 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); font-weight: 700; }
@@ -488,14 +504,18 @@ h1 {
   padding-bottom: 0.1em;
   overflow-wrap: anywhere;
   text-decoration: none;
-  background: var(--silver);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text);
   border-bottom: 2px solid transparent;
   transition: border-color 0.2s;
 }
 .contact-mail:hover { border-color: var(--accent); }
+/* Adres, ekrana girerken klavyeden yazılıyormuş gibi harf harf belirir; sonunda imleç yanıp söner */
+.contact-mail .char { --c: clamp(0, calc(var(--e) * 1.2 * var(--n) - var(--i)), 1); transform: none; }
+.contact-mail::after {
+  content: "_";
+  color: var(--accent);
+  animation: caret 1s steps(1) infinite;
+}
 
 .outro { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
 .zoom { opacity: var(--e); transform: scale(calc(0.6 + var(--e) * 0.4)); }

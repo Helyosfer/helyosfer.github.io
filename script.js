@@ -77,6 +77,9 @@ langToggle.addEventListener('click', () => {
 
 setLanguage(savedLanguage() === 'en' ? 'en' : 'tr');
 
+// Çevirisi olmayan ama harf harf yazılan metinler (e-posta adresi)
+document.querySelectorAll('[data-chars]:not([data-en])').forEach((el) => splitChars(el, el.textContent.trim()));
+
 // ---------- Arka planda kayan formüller ----------
 // Kalkülüsün tanıdık formülleri, LaTeX ile yazılıp KaTeX ile dizilir
 // DÜZENLE: listeye yeni formül ekleyebilir, FORMULA_ROWS ile satır sayısını değiştirebilirsin
