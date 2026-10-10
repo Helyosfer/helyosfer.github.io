@@ -29,6 +29,43 @@ body {
   overflow-x: hidden;
 }
 
+/* ---------- Arka planda kayan formüller ---------- */
+/* DÜZENLE: --formula-color ile görünürlüğü artırıp azaltabilirsin */
+.formulas {
+  --formula-color: rgba(255, 255, 255, 0.085);
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 72px 0 24px;
+  overflow: hidden;
+  pointer-events: none;
+  /* Kenarlarda yumuşakça kaybolsun */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+.formula-row {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  font: italic 400 clamp(1.05rem, 2vw, 1.75rem) "Cambria Math", "STIX Two Math", Cambria, "Times New Roman", serif;
+  color: var(--formula-color);
+  animation: formula-drift var(--duration, 120s) linear infinite;
+  will-change: transform;
+}
+.formula-row:nth-child(even) { animation-direction: reverse; }
+.formula-row span { padding-right: 5.5rem; }
+
+/* Her satırın içeriği iki kez yazılı; yarısı kadar kayınca döngü dikişsiz başa sarar */
+@keyframes formula-drift { to { transform: translateX(-50%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .formula-row { animation: none; }
+}
+
 .progress {
   position: fixed;
   top: 0;

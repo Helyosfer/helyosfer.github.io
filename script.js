@@ -53,6 +53,45 @@ langToggle.addEventListener('click', () => {
 
 setLanguage(savedLanguage() === 'en' ? 'en' : 'tr');
 
+// ---------- Arka planda kayan formüller ----------
+// Yedi Milenyum Problemi'nin simgesel ifadeleri
+// DÜZENLE: listeye yeni formül ekleyebilir, FORMULA_ROWS ile satır sayısını değiştirebilirsin
+const FORMULAS = [
+  // Riemann Hipotezi
+  'ζ(s) = ∑ n<sup>−s</sup>',
+  'ζ(s) = 0 ⟹ Re(s) = ½',
+  // P – NP
+  'P ≟ NP',
+  // Navier–Stokes
+  '∂u/∂t + (u·∇)u = −∇p + ν∇²u',
+  '∇·u = 0',
+  // Yang–Mills ve kütle aralığı
+  'D<sub>μ</sub>F<sup>μν</sup> = 0',
+  'Δ > 0',
+  // Birch ve Swinnerton-Dyer
+  'ord<sub>s=1</sub> L(E, s) = rank E(ℚ)',
+  'y² = x³ + ax + b',
+  // Hodge
+  'Hdg<sup>k</sup>(X) = H<sup>2k</sup>(X, ℚ) ∩ H<sup>k,k</sup>(X)',
+  // Poincaré (çözüldü: Perelman, Ricci akışı)
+  'π<sub>1</sub>(M³) = 0 ⟹ M³ ≅ S³',
+  '∂g<sub>ij</sub>/∂t = −2R<sub>ij</sub>',
+];
+const FORMULA_ROWS = 6;
+
+const formulaLayer = document.querySelector('.formulas');
+for (let row = 0; row < FORMULA_ROWS; row++) {
+  // Her satır listeye farklı bir yerden başlar ve farklı hızda kayar
+  const offset = (row * 5) % FORMULAS.length;
+  const ordered = [...FORMULAS.slice(offset), ...FORMULAS.slice(0, offset)];
+  const half = ordered.map((formula) => `<span>${formula}</span>`).join('');
+  const line = document.createElement('div');
+  line.className = 'formula-row';
+  line.style.setProperty('--duration', `${150 + ((row * 37) % 90)}s`);
+  line.innerHTML = half + half;
+  formulaLayer.append(line);
+}
+
 // Sırayla belirecek öğelere sıra numarası ver
 document.querySelectorAll('[data-stagger]').forEach((group) => {
   const items = [...group.children];
