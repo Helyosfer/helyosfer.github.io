@@ -242,6 +242,21 @@ h1 {
 
 .quotes { position: relative; height: 52vh; }
 
+/* Sahneye dev bir tırnak işaretinin içinden girilir; sonra köşede soluk bir iz olarak kalır */
+.quotes-pin .pin-inner::before {
+  --in: clamp(0, calc(var(--p) * 9), 1);
+  content: "\201C";
+  position: absolute;
+  left: 4vw;
+  top: 6vh;
+  font: 700 46vh/1 Georgia, "Times New Roman", serif;
+  color: var(--accent);
+  opacity: calc(0.6 - var(--in) * 0.46);
+  transform: scale(calc(1 + (1 - var(--in)) * 7));
+  transform-origin: 30% 30%;
+  pointer-events: none;
+}
+
 /* Her söz kendi kaydırma diliminde (--q: 0→1) belirir, yükselir ve kaybolur */
 .quote {
   --q: calc(var(--p) * var(--n) - var(--i));
@@ -279,6 +294,7 @@ h1 {
 
 .skills { display: flex; flex-wrap: wrap; gap: 10px; }
 /* Harf harf yazılan başlıklar: bölümün ilk çeyreğinde tamamlanır */
+.char-word { display: inline-block; white-space: nowrap; }
 .char {
   --c: clamp(0, calc(var(--p) * 3.6 * var(--n) - var(--i)), 1);
   display: inline-block;
@@ -295,8 +311,11 @@ h1 {
 
 /* Matematik bölümü: ilk --intro kadarı parabol sahnesi, kalanı (--q: 0→1) yetenekler ve girdap */
 .math-pin { height: 340vh; --intro: 0.38; }
-.math-pin .pin-inner { --q: clamp(0, calc((var(--p) - var(--intro)) / (1 - var(--intro))), 1); }
-.math-pin [data-stagger] > * { --t: clamp(0, calc(var(--q) * var(--n) * 1.4 - var(--i)), 1); }
+.soft-pin { height: 360vh; --intro: 0.45; }
+.math-pin .pin-inner,
+.soft-pin .pin-inner { --q: clamp(0, calc((var(--p) - var(--intro)) / (1 - var(--intro))), 1); }
+.math-pin [data-stagger] > *,
+.soft-pin .skills > * { --t: clamp(0, calc(var(--q) * var(--n) * 1.4 - var(--i)), 1); }
 .math-pin .flow-label { opacity: clamp(0, calc(var(--q) * 4 - 2), 1); }
 .math-pin .flow figcaption { opacity: var(--q); }
 
@@ -356,13 +375,59 @@ h1 {
 .flow figcaption { margin-top: 12px; font-size: 0.8rem; color: var(--muted); }
 .flow-equation { display: block; margin-bottom: 6px; font-family: var(--mono); font-size: 0.9rem; color: var(--text); }
 
+/* Yazılım sahnesi: ilk --intro kadarı ekranın içinden geri çekilme, kalanı başlık ve yetenekler.
+   --z: 1 = ekranın içinde (tam yakın), 0 = dizüstü kendi yerinde. --dx, --dy, --s0 değerlerini script.js ölçer. */
+.laptop {
+  --z: clamp(0, calc(1 - (var(--p) - 0.1) / (var(--intro) - 0.1)), 1);
+  --zoom: calc(var(--z) * var(--z));
+  position: relative;
+  z-index: 2;
+  transform:
+    translate(calc(var(--dx, 0px) * var(--zoom)), calc(var(--dy, 0px) * var(--zoom)))
+    scale(calc(1 + var(--zoom) * (var(--s0, 1) - 1)));
+  transform-origin: 50% 40%;
+}
+.laptop-screen {
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 0;
+  border-radius: 16px 16px 0 0;
+  background: #1c1c1e;
+}
+.laptop-base {
+  position: relative;
+  height: 14px;
+  margin: 0 -7%;
+  border-radius: 2px 2px 14px 14px;
+  background: linear-gradient(180deg, #3a3a3d, #151517);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9);
+}
+/* Kapağı açmak için tabandaki küçük girinti */
+.laptop-base::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 16%;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 0 0 6px 6px;
+  background: #0c0c0d;
+}
+
+/* Kod, geri çekilme sırasında yazılır; başlık ve etiket ancak dizüstü yerine oturunca gelir */
+.soft-pin .code .line { --t: clamp(0, calc(var(--p) / var(--intro) * var(--n) * 1.2 - var(--i)), 1); }
+.soft-pin .char { --c: clamp(0, calc(var(--q) * 3.2 * var(--n) - var(--i)), 1); }
+.soft-pin .kicker { opacity: clamp(0, calc(var(--q) * 6), 1); }
+.soft-pin .typed::after { display: inline-block; transform: scale(clamp(0, calc(var(--q) * 6), 1)); }
+
+/* Projeler başlığı ekrana girerken harf harf yazılır */
+.rise .char { --c: clamp(0, calc(var(--e) * 1.25 * var(--n) - var(--i)), 1); }
+
 .terminal {
-  border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--surface);
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   overflow: hidden;
-  transform: perspective(1200px) rotateY(calc((1 - min(1, var(--p) * 1.6)) * 16deg));
 }
 .terminal-bar { display: flex; align-items: center; gap: 7px; padding: 13px 16px; border-bottom: 1px solid var(--border); }
 .terminal-bar i { width: 11px; height: 11px; border-radius: 50%; background: #2c2c2e; }
@@ -438,6 +503,8 @@ h1 {
   .pin-inner { position: static; height: auto; min-height: 70vh; padding: 96px 0; }
   .quotes { height: auto; display: grid; gap: 64px; }
   .quote, .quote:first-child, .quote:last-child { position: static; opacity: 1; transform: none; }
+  .laptop { transform: none; }
+  .quotes-pin .pin-inner::before { display: none; }
   .scroll-hint { display: none; }
 }
 

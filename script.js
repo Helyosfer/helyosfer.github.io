@@ -22,13 +22,22 @@ function splitWords(el, text) {
 // Başlığı harf harf <span> içine al ki kaydırdıkça "yazılsın"
 function splitChars(el, text) {
   el.textContent = '';
-  [...text].forEach((char, i) => {
-    const span = document.createElement('span');
-    span.className = 'char';
-    span.textContent = char;
-    span.style.setProperty('--i', i);
-    span.style.setProperty('--n', text.length);
-    el.append(span);
+  let index = 0;
+  // Harfler kelime kelime gruplanır ki satır yalnızca boşluklardan kırılsın
+  text.split(' ').forEach((word, w) => {
+    if (w > 0) el.append(' ');
+    const group = document.createElement('span');
+    group.className = 'char-word';
+    [...word].forEach((char) => {
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.textContent = char;
+      span.style.setProperty('--i', index++);
+      span.style.setProperty('--n', text.length);
+      group.append(span);
+    });
+    index++;
+    el.append(group);
   });
 }
 
@@ -62,6 +71,7 @@ function savedLanguage() {
 langToggle.addEventListener('click', () => {
   const next = document.documentElement.lang === 'tr' ? 'en' : 'tr';
   setLanguage(next);
+  measureLaptop();
   try { localStorage.setItem('lang', next); } catch {}
 });
 
@@ -349,6 +359,37 @@ if (reducedMotion) {
     if (flowRunning && !wasRunning) requestAnimationFrame(flowLoop);
   }).observe(flowSection);
 }
+
+// ---------- Yazılım sahnesi: ekranın içinden geri çekilme ----------
+// Dizüstü bilgisayar önce ekranı tüm pencereyi kaplayacak kadar büyük ve ortada durur;
+// CSS, kaydırma ilerledikçe onu kendi yerine ve gerçek boyutuna indirir.
+// Burada yalnızca başlangıç ölçeği ve merkeze olan uzaklık ölçülür.
+const laptop = document.querySelector('.laptop');
+const laptopScreen = laptop.querySelector('.laptop-screen');
+const laptopStage = laptop.closest('.pin-inner');
+
+function measureLaptop() {
+  // offset* değerleri dönüşümlerden etkilenmez; dizüstünün yerleşimdeki gerçek konumunu verir
+  let left = 0;
+  let top = 0;
+  for (let el = laptop; el && el !== laptopStage; el = el.offsetParent) {
+    left += el.offsetLeft;
+    top += el.offsetTop;
+  }
+  const centerX = left + laptop.offsetWidth / 2;
+  const centerY = top + laptopScreen.offsetHeight / 2;
+  const cover = Math.max(
+    laptopStage.clientWidth / laptopScreen.offsetWidth,
+    laptopStage.clientHeight / laptopScreen.offsetHeight
+  );
+  laptop.style.setProperty('--dx', `${laptopStage.clientWidth / 2 - centerX}px`);
+  laptop.style.setProperty('--dy', `${laptopStage.clientHeight / 2 - centerY}px`);
+  laptop.style.setProperty('--s0', (cover * 1.12).toFixed(3));
+}
+
+measureLaptop();
+window.addEventListener('resize', measureLaptop);
+if (document.fonts) document.fonts.ready.then(measureLaptop);
 
 const pinned = [...document.querySelectorAll('[data-pin]')];
 const entering = [...document.querySelectorAll('[data-enter]')];
