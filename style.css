@@ -278,6 +278,57 @@ h1 {
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
 
 .skills { display: flex; flex-wrap: wrap; gap: 10px; }
+/* Harf harf yazılan başlıklar: bölümün ilk çeyreğinde tamamlanır */
+.char {
+  --c: clamp(0, calc(var(--p) * 3.6 * var(--n) - var(--i)), 1);
+  display: inline-block;
+  opacity: var(--c);
+  transform: translateY(calc((1 - var(--c)) * 0.25em));
+}
+.typed::after {
+  content: "_";
+  margin-left: 0.04em;
+  color: var(--accent);
+  animation: caret 1s steps(1) infinite;
+}
+@keyframes caret { 50% { opacity: 0; } }
+
+/* Matematik bölümü: ilk --intro kadarı parabol sahnesi, kalanı (--q: 0→1) yetenekler ve girdap */
+.math-pin { height: 340vh; --intro: 0.38; }
+.math-pin .pin-inner { --q: clamp(0, calc((var(--p) - var(--intro)) / (1 - var(--intro))), 1); }
+.math-pin [data-stagger] > * { --t: clamp(0, calc(var(--q) * var(--n) * 1.4 - var(--i)), 1); }
+.math-pin .flow-label { opacity: clamp(0, calc(var(--q) * 4 - 2), 1); }
+.math-pin .flow figcaption { opacity: var(--q); }
+
+.parabola {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: min(94vw, 120vh);
+  height: 84vh;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  /* Parabol tamamlanınca solar ve sahneyi girdaba bırakır */
+  opacity: clamp(0, calc((var(--intro) + 0.06 - var(--p)) * 10), 1);
+}
+.parabola-axes { fill: none; stroke: rgba(255, 255, 255, 0.28); stroke-width: 0.012; opacity: clamp(0, calc(var(--p) * 14), 1); }
+.parabola-curve {
+  fill: none;
+  stroke: url(#parabola-gradient);
+  stroke-width: 0.035;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - clamp(0, calc(var(--p) / 0.3), 1));
+}
+.parabola-tangent { stroke: rgba(255, 255, 255, 0.55); stroke-width: 0.012; opacity: clamp(0, calc(var(--p) * 40), 1); }
+.parabola-dot { fill: #fff; opacity: clamp(0, calc(var(--p) * 40), 1); }
+.parabola-label {
+  font: italic 0.3px "Cambria Math", Cambria, "Times New Roman", serif;
+  fill: var(--text);
+  opacity: clamp(0, calc((var(--p) - 0.24) * 14), 1);
+}
+
 .skills li {
   padding: 9px 18px;
   border: 1px solid var(--border);

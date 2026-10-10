@@ -100,13 +100,30 @@
       </div>
     </section>
 
-    <!-- MATEMATİK: girdap kaydırdıkça çizilir -->
-    <section id="matematik" class="pin skill-pin" data-pin>
+    <!-- MATEMATİK: önce başlık yazılırken y = x² parabolü çizilir, sonra yetenekler ve girdap gelir -->
+    <section id="matematik" class="pin skill-pin math-pin" data-pin>
       <div class="pin-inner">
+        <svg class="parabola" viewBox="-3 -4.9 6 5.8" aria-hidden="true">
+          <defs>
+            <linearGradient id="parabola-gradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#ffffff"/>
+              <stop offset="1" stop-color="#bf9bff"/>
+            </linearGradient>
+          </defs>
+          <g class="parabola-axes">
+            <line x1="-2.8" y1="0" x2="2.8" y2="0"/>
+            <line x1="0" y1="0.6" x2="0" y2="-4.7"/>
+            <path d="M-2 -0.06V0.06M-1 -0.06V0.06M1 -0.06V0.06M2 -0.06V0.06M-0.06 -1H0.06M-0.06 -2H0.06M-0.06 -3H0.06M-0.06 -4H0.06"/>
+          </g>
+          <path class="parabola-curve" pathLength="1"/>
+          <line class="parabola-tangent"/>
+          <circle class="parabola-dot" r="0.07"/>
+          <text class="parabola-label" x="2.15" y="-3.4">y = x²</text>
+        </svg>
         <div class="container split">
           <div>
             <p class="kicker"><span class="num">03</span> <span data-en="Skills">Yetenekler</span></p>
-            <h2 data-en="Mathematics">Matematik</h2>
+            <h2 data-chars data-en="Mathematics">Matematik</h2>
             <ul class="skills" data-stagger>
               <li>Advanced Mathematics</li>
               <li>Calculations</li>
@@ -152,7 +169,7 @@
           </div>
           <div>
             <p class="kicker"><span class="num">04</span> <span data-en="Skills">Yetenekler</span></p>
-            <h2 data-en="Software">Yazılım</h2>
+            <h2 data-chars class="typed" data-en="Software">Yazılım</h2>
             <!-- DÜZENLE: Kullandığın diğer dilleri buraya <li> olarak ekle -->
             <ul class="skills" data-stagger>
               <li>Python</li>

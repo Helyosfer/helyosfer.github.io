@@ -19,6 +19,19 @@ function splitWords(el, text) {
   });
 }
 
+// Başlığı harf harf <span> içine al ki kaydırdıkça "yazılsın"
+function splitChars(el, text) {
+  el.textContent = '';
+  [...text].forEach((char, i) => {
+    const span = document.createElement('span');
+    span.className = 'char';
+    span.textContent = char;
+    span.style.setProperty('--i', i);
+    span.style.setProperty('--n', text.length);
+    el.append(span);
+  });
+}
+
 // ---------- Dil (TR / EN) ----------
 // Türkçe metin HTML'de, İngilizcesi data-en özelliğinde durur
 const PAGE_TITLES = {
@@ -34,6 +47,7 @@ function setLanguage(lang) {
   document.title = PAGE_TITLES[lang];
   translatable.forEach((el) => {
     if (el.hasAttribute('data-words')) splitWords(el, el.dataset[lang]);
+    else if (el.hasAttribute('data-chars')) splitChars(el, el.dataset[lang]);
     else el.textContent = el.dataset[lang];
   });
   // Düğme, geçilecek diğer dili gösterir
@@ -102,6 +116,43 @@ document.querySelectorAll('[data-stagger]').forEach((group) => {
     item.style.setProperty('--n', items.length);
   });
 });
+
+// ---------- Parabol sahnesi ----------
+// Matematik bölümünün ilk kısmında y = x² çizilir; üzerinde bir nokta teğetiyle birlikte ilerler.
+// DÜZENLE: MATH_INTRO, bölümün ne kadarının parabole ayrılacağını belirler (style.css içindeki --intro ile aynı olmalı)
+const MATH_INTRO = 0.38;
+const PARABOLA_DRAW = 0.3;
+
+const parabolaCurve = document.querySelector('.parabola-curve');
+const parabolaDot = document.querySelector('.parabola-dot');
+const parabolaTangent = document.querySelector('.parabola-tangent');
+
+const parabolaPoints = [];
+for (let i = 0; i <= 120; i++) {
+  const x = -2.1 + (4.2 * i) / 120;
+  // SVG'de y aşağı doğru arttığı için eğri ters çevrilir
+  parabolaPoints.push(`${x.toFixed(3)} ${(-x * x).toFixed(3)}`);
+}
+parabolaCurve.setAttribute('d', 'M' + parabolaPoints.join('L'));
+const parabolaLength = parabolaCurve.getTotalLength();
+
+function updateParabola(sectionProgress) {
+  const drawn = clamp(sectionProgress / PARABOLA_DRAW, 0, 1) * parabolaLength;
+  const point = parabolaCurve.getPointAtLength(drawn);
+  // Teğetin yönü: eğri üzerinde biraz geri ve biraz ileri iki nokta arasındaki doğrultu
+  const before = parabolaCurve.getPointAtLength(Math.max(0, drawn - 0.02));
+  const after = parabolaCurve.getPointAtLength(Math.min(parabolaLength, drawn + 0.02));
+  const length = Math.hypot(after.x - before.x, after.y - before.y) || 1;
+  const dx = ((after.x - before.x) / length) * 0.7;
+  const dy = ((after.y - before.y) / length) * 0.7;
+
+  parabolaDot.setAttribute('cx', point.x);
+  parabolaDot.setAttribute('cy', point.y);
+  parabolaTangent.setAttribute('x1', point.x - dx);
+  parabolaTangent.setAttribute('y1', point.y - dy);
+  parabolaTangent.setAttribute('x2', point.x + dx);
+  parabolaTangent.setAttribute('y2', point.y + dy);
+}
 
 // ---------- Navier–Stokes girdabı ----------
 // Burgers girdabı, Navier–Stokes denklemlerinin tam bir çözümüdür:
@@ -191,7 +242,10 @@ function drawFlow(time) {
 
   // Kaydırma ilerlemesi: çizgiler dıştan içe ve yukarı doğru uzar
   const scrollProgress = parseFloat(flowSection.style.getPropertyValue('--p'));
-  const progress = Number.isNaN(scrollProgress) ? 1 : Math.min(1, scrollProgress * 1.3);
+  // Bölümün ilk kısmı parabol sahnesine ayrılmış; girdap ondan sonra başlar
+  const progress = Number.isNaN(scrollProgress)
+    ? 1
+    : Math.min(1, clamp((scrollProgress - MATH_INTRO) / (1 - MATH_INTRO), 0, 1) * 1.3);
   const visible = Math.floor(FLOW_STEPS * progress);
 
   flowCtx.clearRect(0, 0, w, h);
@@ -315,7 +369,9 @@ function updateScroll() {
       el.style.setProperty('--p', el.classList.contains('hero') ? 0 : 1);
       continue;
     }
-    el.style.setProperty('--p', clamp(-rect.top / (rect.height - vh), 0, 1).toFixed(4));
+    const progress = clamp(-rect.top / (rect.height - vh), 0, 1);
+    el.style.setProperty('--p', progress.toFixed(4));
+    if (el === flowSection) updateParabola(progress);
   }
 
   // Ekrana giren öğeler: alttan girip ekranın ortasına gelene kadar (0 → 1)
