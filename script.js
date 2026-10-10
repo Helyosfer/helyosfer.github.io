@@ -378,10 +378,8 @@ function measureLaptop() {
   }
   const centerX = left + laptop.offsetWidth / 2;
   const centerY = top + laptopScreen.offsetHeight / 2;
-  const cover = Math.max(
-    laptopStage.clientWidth / laptopScreen.offsetWidth,
-    laptopStage.clientHeight / laptopScreen.offsetHeight
-  );
+  // Ekran pencereyi enine doldursun; dikey telefonda boyuna doldurmak kodu yanlardan keserdi
+  const cover = laptopStage.clientWidth / laptopScreen.offsetWidth;
   laptop.style.setProperty('--dx', `${laptopStage.clientWidth / 2 - centerX}px`);
   laptop.style.setProperty('--dy', `${laptopStage.clientHeight / 2 - centerY}px`);
   laptop.style.setProperty('--s0', (cover * 1.12).toFixed(3));

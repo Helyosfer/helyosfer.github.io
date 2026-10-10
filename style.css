@@ -552,6 +552,8 @@ h1 {
 
   .split { grid-template-columns: 1fr; gap: 24px; }
   .split-reverse > :first-child { order: 2; }
+  /* Dar ekranda yazılar formüllerin tam üstüne düşer; okunaklı kalsın diye formüller kısılır */
+  .formulas { --formula-color: rgba(255, 255, 255, 0.11); }
   .flow-stage { width: min(62vw, 270px); }
   .flow-label { font-size: 0.68rem; }
   .flow-equation { font-size: 0.72rem; }
