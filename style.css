@@ -475,6 +475,28 @@ h1 {
 .card-more small { font-family: var(--mono); font-size: 0.78rem; font-weight: 400; color: var(--muted); }
 
 /* ---------- Kapanış ---------- */
+/* ---------- İletişim ---------- */
+.contact { padding-bottom: 80px; }
+.contact-text { max-width: 30rem; font-size: clamp(1.05rem, 2vw, 1.3rem); color: var(--muted); margin-bottom: 1.5rem; }
+.contact-mail {
+  display: inline-block;
+  max-width: 100%;
+  font-size: clamp(1.5rem, 6.4vw, 4.6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  padding-bottom: 0.1em;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+  background: var(--silver);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+.contact-mail:hover { border-color: var(--accent); }
+
 .outro { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
 .zoom { opacity: var(--e); transform: scale(calc(0.6 + var(--e) * 0.4)); }
 .outro-title {
