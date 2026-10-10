@@ -574,6 +574,9 @@ h1 {
   .split-reverse > :first-child { order: 2; }
   /* Dar ekranda yazılar formüllerin tam üstüne düşer; okunaklı kalsın diye formüller kısılır */
   .formulas { --formula-color: rgba(255, 255, 255, 0.11); }
+  /* Kartlar alt alta dizildiği için yandan kayma ekran dışına taşardı; yalnızca eğilerek açılsınlar */
+  .projects .card:nth-child(n) { --from: 0; }
+  .rule { margin: -0.35rem 0 1.5rem; }
   .flow-stage { width: min(62vw, 270px); }
   .flow-label { font-size: 0.68rem; }
   .flow-equation { font-size: 0.72rem; }
