@@ -32,7 +32,7 @@ body {
 /* ---------- Arka planda kayan formüller ---------- */
 /* DÜZENLE: --formula-color ile görünürlüğü artırıp azaltabilirsin */
 .formulas {
-  --formula-color: rgba(255, 255, 255, 0.085);
+  --formula-color: rgba(255, 255, 255, 0.2);
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -50,14 +50,15 @@ body {
 .formula-row {
   display: flex;
   width: max-content;
+  align-items: center;
   white-space: nowrap;
-  font: italic 400 clamp(1.05rem, 2vw, 1.75rem) "Cambria Math", "STIX Two Math", Cambria, "Times New Roman", serif;
+  font-size: clamp(0.85rem, 1.5vw, 1.3rem);
   color: var(--formula-color);
   animation: formula-drift var(--duration, 120s) linear infinite;
   will-change: transform;
 }
 .formula-row:nth-child(even) { animation-direction: reverse; }
-.formula-row span { padding-right: 5.5rem; }
+.formula-row > .formula { padding-right: 5.5rem; }
 
 /* Her satırın içeriği iki kez yazılı; yarısı kadar kayınca döngü dikişsiz başa sarar */
 @keyframes formula-drift { to { transform: translateX(-50%); } }

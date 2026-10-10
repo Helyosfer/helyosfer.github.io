@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- KaTeX: arka plandaki formülleri gerçek matematik dizgisiyle çizer -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,7 +17,7 @@
   <!-- ÇEVİRİ: Sayfadaki Türkçe metin etiketin içinde, İngilizcesi data-en özelliğinde durur.
        Bir metni değiştirirken ikisini de güncelle. Dil düğmesi (TR/EN) script.js içinde. -->
 
-  <!-- Arka planda kayan Milenyum Problemleri formülleri (satırları script.js doldurur) -->
+  <!-- Arka planda kayan kalkülüs formülleri (satırları script.js doldurur) -->
   <div class="formulas" aria-hidden="true"></div>
 
   <div class="progress" aria-hidden="true"></div>
@@ -225,6 +227,7 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+  <script defer src="script.js"></script>
 </body>
 </html>

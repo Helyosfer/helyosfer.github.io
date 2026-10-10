@@ -54,42 +54,44 @@ langToggle.addEventListener('click', () => {
 setLanguage(savedLanguage() === 'en' ? 'en' : 'tr');
 
 // ---------- Arka planda kayan formüller ----------
-// Yedi Milenyum Problemi'nin simgesel ifadeleri
+// Kalkülüsün tanıdık formülleri, LaTeX ile yazılıp KaTeX ile dizilir
 // DÜZENLE: listeye yeni formül ekleyebilir, FORMULA_ROWS ile satır sayısını değiştirebilirsin
 const FORMULAS = [
-  // Riemann Hipotezi
-  'ζ(s) = ∑ n<sup>−s</sup>',
-  'ζ(s) = 0 ⟹ Re(s) = ½',
-  // P – NP
-  'P ≟ NP',
-  // Navier–Stokes
-  '∂u/∂t + (u·∇)u = −∇p + ν∇²u',
-  '∇·u = 0',
-  // Yang–Mills ve kütle aralığı
-  'D<sub>μ</sub>F<sup>μν</sup> = 0',
-  'Δ > 0',
-  // Birch ve Swinnerton-Dyer
-  'ord<sub>s=1</sub> L(E, s) = rank E(ℚ)',
-  'y² = x³ + ax + b',
-  // Hodge
-  'Hdg<sup>k</sup>(X) = H<sup>2k</sup>(X, ℚ) ∩ H<sup>k,k</sup>(X)',
-  // Poincaré (çözüldü: Perelman, Ricci akışı)
-  'π<sub>1</sub>(M³) = 0 ⟹ M³ ≅ S³',
-  '∂g<sub>ij</sub>/∂t = −2R<sub>ij</sub>',
+  String.raw`\frac{d}{dx}\ln x = \frac{1}{x}`,
+  String.raw`\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}`,
+  String.raw`\lim_{n\to\infty}\left(1+\frac{1}{n}\right)^{n} = e`,
+  String.raw`\int \frac{1}{x}\,dx = \ln|x| + C`,
+  String.raw`f'(x) = \lim_{h\to 0}\frac{f(x+h)-f(x)}{h}`,
+  String.raw`\sum_{n=1}^{\infty}\frac{1}{n^2} = \frac{\pi^2}{6}`,
+  String.raw`\ln(ab) = \ln a + \ln b`,
+  String.raw`\int_a^b f'(x)\,dx = f(b)-f(a)`,
+  String.raw`e^{x} = \sum_{n=0}^{\infty}\frac{x^n}{n!}`,
+  String.raw`\lim_{x\to 0}\frac{\sin x}{x} = 1`,
+  String.raw`\int u\,dv = uv - \int v\,du`,
+  String.raw`\ln(1+x) = x - \frac{x^2}{2} + \frac{x^3}{3} - \cdots`,
+  String.raw`\frac{d}{dx}e^{x} = e^{x}`,
+  String.raw`e^{i\pi} + 1 = 0`,
+  String.raw`\int_1^{e}\frac{1}{x}\,dx = 1`,
+  String.raw`\frac{d}{dx}\sin x = \cos x`,
 ];
 const FORMULA_ROWS = 6;
 
+// KaTeX yüklenemediyse (ör. çevrimdışı) arka plan boş kalır, sayfa yine çalışır
 const formulaLayer = document.querySelector('.formulas');
-for (let row = 0; row < FORMULA_ROWS; row++) {
-  // Her satır listeye farklı bir yerden başlar ve farklı hızda kayar
-  const offset = (row * 5) % FORMULAS.length;
-  const ordered = [...FORMULAS.slice(offset), ...FORMULAS.slice(0, offset)];
-  const half = ordered.map((formula) => `<span>${formula}</span>`).join('');
-  const line = document.createElement('div');
-  line.className = 'formula-row';
-  line.style.setProperty('--duration', `${150 + ((row * 37) % 90)}s`);
-  line.innerHTML = half + half;
-  formulaLayer.append(line);
+if (window.katex) {
+  const rendered = FORMULAS.map((tex) =>
+    `<span class="formula">${katex.renderToString(String.raw`\displaystyle ` + tex, { throwOnError: false })}</span>`
+  );
+  for (let row = 0; row < FORMULA_ROWS; row++) {
+    // Her satır listeye farklı bir yerden başlar ve farklı hızda kayar
+    const offset = (row * 5) % rendered.length;
+    const half = [...rendered.slice(offset), ...rendered.slice(0, offset)].join('');
+    const line = document.createElement('div');
+    line.className = 'formula-row';
+    line.style.setProperty('--duration', `${150 + ((row * 37) % 90)}s`);
+    line.innerHTML = half + half;
+    formulaLayer.append(line);
+  }
 }
 
 // Sırayla belirecek öğelere sıra numarası ver
