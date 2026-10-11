@@ -67,7 +67,7 @@ Bunların dışında:
 
 ### Eksikler
 
-- [ ] Site simgesi (favicon) yok.
+- [x] Site simgesi (favicon): gümüş Eta (Η) harfi, `favicon.svg`. PNG yedeği yok; SVG simge desteklemeyen eski tarayıcılarda görünmez.
 - [ ] Paylaşım önizlemesi yok: bağlantı WhatsApp / X / Discord'da paylaşılınca başlık, açıklama ve görsel çıkmıyor (Open Graph etiketleri).
 - [ ] 404 sayfası yok.
 - [ ] Repoda README yok.
