@@ -488,6 +488,7 @@ h1 {
 .site-footer { padding: 22px 0; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; }
 .site-footer .container { display: flex; justify-content: space-between; align-items: center; }
 .site-footer p { margin: 0; }
+.footer-links { display: flex; gap: 24px; }
 .site-footer a { text-decoration: none; }
 .site-footer a:hover { color: var(--text); }
 
