@@ -68,7 +68,7 @@ Bunların dışında:
 ### Kullanıcıdan cevap bekleyenler
 
 - [ ] `mail@helyosfer.me` adresi Proton'da gerçekten açık mı? Değilse oluşturulmalı ya da sitedeki adres değiştirilmeli.
-- [ ] Kullanılan diğer programlama dilleri neler? Yetenek listesinde yalnızca Python ve JavaScript yazıyor. Heliopause C# ile yazılmış ama C# listede ve kod penceresindeki `stack` satırında yok; eklensin mi? Voyager için "Discord Bots" gibi bir yetenek de eklenebilir.
+- [ ] Kullanılan başka programlama dili var mı? Yetenek listesinde ve kod penceresindeki `stack` satırında Python, JavaScript ve C# yazıyor (üçü de projelerden doğrulandı; C# 12 Ekim'de eklendi). Voyager için "Discord Bots" gibi bir yetenek de eklenebilir.
 - [ ] "Hakkımda" sahnesinde şimdilik yalnızca "Matematikçi. Yazılım geliştirici." duruyor. Daha kişisel bir cümle istenir mi?
 - [ ] Magnetosphere için mağaza bağlantısı (Chrome Web Store vb.) var mı? Şu an yalnızca GitHub'a gidiyor.
 
