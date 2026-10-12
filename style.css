@@ -439,6 +439,8 @@ h1 {
 .card-body p { color: var(--muted); margin: 0; font-size: 1.05rem; }
 .card-kicker { font-size: 0.85rem !important; font-weight: 500; color: var(--accent) !important; }
 .card-link { margin-top: 10px; font-weight: 500; text-decoration: none; }
+/* Bir kartta birden fazla bağlantı varsa yan yana durur, sığmazsa alt satıra geçer */
+.card-links { display: flex; flex-wrap: wrap; gap: 4px 28px; }
 .card-link .arrow { display: inline-block; transition: transform 0.2s; }
 .card-link:hover .arrow { transform: translateX(4px); }
 
@@ -499,7 +501,8 @@ h1 {
 @media (prefers-reduced-motion: reduce), (max-height: 560px) {
   html { scroll-behavior: auto; }
   .pin, .hero, .statement-pin, .quotes-pin { height: auto; }
-  .pin-inner { position: static; height: auto; min-height: 70vh; padding: 96px 0; }
+  /* relative: sabitlenmez ama içindeki mutlak konumlu süsleri (giriş ışıltısı, parabol) kendi sınırında keser */
+  .pin-inner { position: relative; height: auto; min-height: 70vh; padding: 96px 0; }
   .quotes { height: auto; display: grid; gap: 64px; }
   .quote, .quote:first-child, .quote:last-child { position: static; opacity: 1; transform: none; }
   .quotes-pin .pin-inner::before { display: none; }
