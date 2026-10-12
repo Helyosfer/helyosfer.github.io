@@ -429,8 +429,10 @@ h1 {
     scale(calc(0.84 + var(--e) * 0.16));
   transform-origin: center top;
 }
-.projects .card:nth-child(1) { --from: -1; }
-.projects .card:nth-child(2) { --from: 1; }
+.projects .card:nth-child(1),
+.projects .card:nth-child(3) { --from: -1; }
+.projects .card:nth-child(2),
+.projects .card:nth-child(4) { --from: 1; }
 
 .card-body { display: flex; flex-direction: column; gap: 14px; padding: 40px; }
 .card-body h3 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); font-weight: 700; }
