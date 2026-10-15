@@ -2,6 +2,9 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
+  <!-- CSP: GitHub Pages başlık ekleyemediği için <meta> ile. Yeni bir dış kaynak (CDN, font, görsel)
+       eklersen buraya da yaz. style-src-attr, KaTeX'in ürettiği satır içi style="" öznitelikleri için. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/; style-src 'self' https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/ https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/fonts/ https://fonts.gstatic.com; img-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Helyosfer — Matematikçi & Yazılım Geliştirici</title>
   <meta name="description" content="Helyosfer: matematikçi ve yazılım geliştirici. Yetenekler, projeler ve GitHub.">
@@ -10,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- KaTeX: arka plandaki formülleri gerçek matematik dizgisiyle çizer -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -34,7 +37,7 @@
           <li><a href="#iletisim" data-en="Contact">İletişim</a></li>
           <li><a href="https://github.com/Helyosfer?tab=repositories" target="_blank" rel="noopener" class="nav-cta">GitHub</a></li>
         </ul>
-        <button class="lang-toggle" aria-label="Switch to English">EN</button>
+        <button class="lang-toggle" aria-label="EN: Switch to English">EN</button>
         <button class="nav-toggle" aria-label="Menü" aria-expanded="false">
           <span></span><span></span>
         </button>
@@ -286,7 +289,7 @@
     </div>
   </footer>
 
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
   <script defer src="script.js"></script>
 </body>
 </html>

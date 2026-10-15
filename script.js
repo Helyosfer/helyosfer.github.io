@@ -61,7 +61,7 @@ function setLanguage(lang) {
   });
   // Düğme, geçilecek diğer dili gösterir
   langToggle.textContent = lang === 'tr' ? 'EN' : 'TR';
-  langToggle.setAttribute('aria-label', lang === 'tr' ? 'Switch to English' : 'Türkçeye geç');
+  langToggle.setAttribute('aria-label', lang === 'tr' ? 'EN: Switch to English' : 'TR: Türkçeye geç');
 }
 
 function savedLanguage() {

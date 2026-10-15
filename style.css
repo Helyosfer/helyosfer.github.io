@@ -392,7 +392,7 @@ h1 {
 .code .k { color: var(--accent); }
 .code .f { color: #ffffff; font-weight: 600; }
 .code .s { color: #a1a1a6; }
-.code .c { color: #636366; }
+.code .c { color: var(--muted); }
 
 /* ---------- Projeler ---------- */
 .section { padding-top: 140px; padding-bottom: 40px; }
