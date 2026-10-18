@@ -12,10 +12,7 @@ Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir
 - **Bilgisayardaki kopya:** `Belgeler\Helyosfer\helyosfer.github.io` (OneDrive içinde). Çalışılan tek kopya bu; kullanıcı da dosyaları burada elle düzenliyor, o yüzden işe başlamadan önce `git status` ve `git pull` ile bak.
 - **Yerelde açmak:** repo klasöründe `py -m http.server 5500`, sonra `http://localhost:5500`
 - **Dosyalar:** `index.html` (içerik), `style.css` (görünüm), `script.js` (animasyonlar), `favicon.svg` (sekme simgesi), `CNAME` (alan adı; silme)
-- **DNS:** 15 Ekim'den beri **Cloudflare**'de (ücretsiz plan; ad sunucuları `langston` ve `ursula.ns.cloudflare.com`). Alan adı Atak Domain kayıtlı, Hosting Dünyam panelinden yönetiliyor; orada yalnızca ad sunucusu ayarı önemli, Hosting Dünyam'daki eski DNS kayıtları artık kullanılmıyor. DNS değişiklikleri Cloudflare panelinden yapılır.
-- **Cloudflare kayıtları:** GitHub Pages (kök için dört `A`, `www` için `CNAME`) ve Proton Mail kayıtları (MX, SPF, DMARC, üç DKIM `CNAME`) **DNS only** (gri). Kendi sunucudaki `voyager` ve `magnetosphere` **Proxied** (turuncu). SSL/TLS modu **Full (strict)**.
-- **Kendi sunucu (VDS):** Ubuntu 24.04. Caddy, `voyager.helyosfer.me` (Discord botunun sitesi) ve `magnetosphere.helyosfer.me` (eklentinin arka ucu ve Chrome Web Store için `/privacy` sayfası) adreslerini sunuyor; her alt alan adının ayarı `/etc/caddy/sites/<ad>.caddy` dosyasında. Giriş yalnızca SSH anahtarıyla, şifreyle giriş kapalı.
-- **Sunucu güvenlik duvarı (ufw):** 80 ve 443 yalnızca Cloudflare'in IP aralıklarına açık; doğrudan sunucu IP'sinden web erişimi kapalı. Liste `/usr/local/sbin/ufw-cloudflare` betiğiyle haftada bir yenileniyor (`/etc/cron.weekly/ufw-cloudflare`). SSH (22) açık. 15 Ekim öncesi kuralların yedeği `/root` altında.
+- **DNS:** Cloudflare'de; DNS değişiklikleri Cloudflare panelinden yapılır. Ayrıntılar (kayıtlar, sunucu) yerel `ROADMAP-ozel.md` dosyasında, depoya girmez.
 
 ### Çalışma kuralları
 
@@ -25,8 +22,6 @@ Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir
 - Değişiklikten sonra hem masaüstünde hem telefon boyutunda (375×812) bak.
 - Yerel sunucu CSS/JS'yi önbellekten verebilir; değişiklik görünmüyorsa sert yenile (`Ctrl + F5`).
 - Sayfada `<meta>` ile bir Content-Security-Policy var (15 Ekim): betikler yalnızca siteden ve sabitlenmiş KaTeX adresinden, stiller siteden, KaTeX'ten ve Google Fonts'tan yüklenebilir; KaTeX dosyalarında SRI (`integrity`) hash'i var. Yeni bir dış kaynak (betik, yazı tipi, görsel) eklenirse CSP'ye de eklenmeli, yoksa tarayıcı engeller. KaTeX sürümü değişirse hash'ler de değişmeli.
-- **Kendi sunucuda yeni bir alt alan adı açarken:** Cloudflare'e turuncu (Proxied) bir `A` kaydı ekle ve `/etc/caddy/sites/` altına site dosyası koy. Kayıt gri olursa güvenlik duvarı ziyaretçileri engeller.
-- **DNS taşırken ya da toplu değiştirirken** sunucudaki `/etc/caddy/sites/` listesine bak. 15 Ekim'deki Cloudflare geçişinde `magnetosphere` kaydı gözden kaçtı ve bir süre eksik kaldı; dışarıdan yalnızca adı tahmin edilen kayıtlar görülebiliyor.
 
 ## Şu anki durum
 
@@ -77,15 +72,6 @@ Bunların dışında:
 - [ ] Kullanılan başka programlama dili var mı? Yetenek listesinde ve kod penceresindeki `stack` satırında Python, JavaScript ve C# yazıyor (üçü de projelerden doğrulandı; C# 12 Ekim'de eklendi). Voyager için "Discord Bots" gibi bir yetenek de eklenebilir.
 - [ ] "Hakkımda" sahnesinde şimdilik yalnızca "Matematikçi. Yazılım geliştirici." duruyor. Daha kişisel bir cümle istenir mi?
 - [ ] Magnetosphere için mağaza bağlantısı (Chrome Web Store vb.) var mı? Şu an yalnızca GitHub'a gidiyor.
-
-### Güvenlik (DDoS)
-
-- [x] DNS Cloudflare'e taşındı; `voyager` ve `magnetosphere` Cloudflare proxy'si arkasında; SSL Full (strict) (15 Ekim).
-- [x] Sunucuda 80/443 yalnızca Cloudflare'e açık; doğrudan IP'den erişimin kapalı olduğu test edildi (15 Ekim).
-- [ ] İsteğe bağlı: sağlayıcıdan sunucu için yeni IP almak. Şu anki IP eski DNS kayıtlarından biliniyor; güvenlik duvarı web portlarını koruyor ama çok büyük bir saldırı ağ hattını yine de doldurabilir. Yeni IP alınırsa Cloudflare'deki `voyager` ve `magnetosphere` kayıtları güncellenmeli.
-- [ ] İsteğe bağlı: SSH için fail2ban.
-- [ ] İsteğe bağlı: VPS sağlayıcısının ağ seviyesinde DDoS koruması olup olmadığını sormak.
-- Ana site (GitHub Pages + Fastly) için ek bir şey gerekmiyor.
 
 ### Bilinen kusurlar
 
