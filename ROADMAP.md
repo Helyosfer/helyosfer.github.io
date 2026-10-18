@@ -39,7 +39,7 @@ Tek sayfalık, siyah ve sade ("premium") bir portfolyo. Kaydırdıkça sahne sah
 | 02 | İlham | Gauss, Galileo, Cantor, Hardy, Hilbert sözleri | Dev tırnak işaretinin içinden girilir; sözler sırayla değişir |
 | 03 | Matematik | Yetenekler + Navier–Stokes girdabı (Burgers girdabı) | Başlık yazılırken `y = x²` parabolü teğetiyle çizilir |
 | 04 | Yazılım | Kod penceresi + yetenekler | Pencere yandan döner, kod satır satır yazılır |
-| 05 | Projeler | Dört proje kartı (aşağıdaki tablo) + "Tüm projeler" | Başlık yazılır, çizgi çizilir, kartlar açılır |
+| 05 | Projeler | Dört proje kartı (aşağıdaki tablo) + "Tüm projeler" (GitHub + Codeberg) | Başlık yazılır, çizgi çizilir, kartlar açılır |
 | 06 | İletişim | `mail@helyosfer.me` | Adres harf harf yazılır |
 | – | Kapanış | "Q.E.D." | Büyüyerek gelir |
 

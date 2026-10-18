@@ -447,6 +447,15 @@ h1 {
 .card-more { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 32px; text-align: center; text-decoration: none; font-weight: 600; }
 .card-more-symbol { width: 56px; height: 56px; margin-bottom: 10px; fill: none; stroke: url(#sigma-gradient); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .card-more small { font-family: var(--mono); font-size: 0.78rem; font-weight: 400; color: var(--muted); }
+/* Kartın alt yarısı: GitHub ve Codeberg yan yana, aralarında ince bir çizgi */
+.card-more-title { font-size: 1.1rem; }
+.card-more-hosts { display: grid; grid-template-columns: 1fr 1fr; width: min(100%, 560px); margin-top: 18px; border-top: 1px solid var(--border); }
+.card-more-host { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 12px 4px; text-decoration: none; transition: background 0.2s; }
+.card-more-host + .card-more-host { border-left: 1px solid var(--border); border-radius: 0 0 16px 0; }
+.card-more-host:first-child { border-radius: 0 0 0 16px; }
+.card-more-host:hover { background: rgba(255, 255, 255, 0.04); }
+.card-more-host .arrow { display: inline-block; transition: transform 0.2s; }
+.card-more-host:hover .arrow { transform: translateX(4px); }
 
 /* ---------- Kapanış ---------- */
 /* ---------- İletişim ---------- */
@@ -543,5 +552,10 @@ h1 {
   h2 { margin-bottom: 1.25rem; }
   .projects { grid-template-columns: 1fr; }
   .card-body { padding: 28px; }
+  /* Dar ekranda GitHub ve Codeberg alt alta durur */
+  .card-more-hosts { grid-template-columns: 1fr; }
+  .card-more-host { padding: 14px 12px; }
+  .card-more-host + .card-more-host { border-left: 0; border-top: 1px solid var(--border); border-radius: 0 0 16px 16px; }
+  .card-more-host:first-child { border-radius: 0; }
   .section { padding-top: 96px; }
 }
