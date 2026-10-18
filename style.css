@@ -446,11 +446,11 @@ h1 {
 
 .card-more { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 32px; text-align: center; text-decoration: none; font-weight: 600; }
 .card-more-symbol { width: 56px; height: 56px; margin-bottom: 10px; fill: none; stroke: url(#sigma-gradient); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-/* Başlığın altında tek satır: "GitHub & Codeberg", her kelime ayrı bağlantı */
+/* Başlığın altında tek satır: "GitHub › & Codeberg ›", proje kartlarındaki bağlantılarla aynı stilde */
 .card-more-title { font-size: 1.1rem; }
-.card-more-hosts { display: flex; align-items: baseline; gap: 10px; margin: 4px 0 0; font-family: var(--mono); font-size: 0.85rem; font-weight: 400; color: var(--muted); }
-.card-more-hosts a { text-decoration: none; transition: color 0.2s; }
-.card-more-hosts a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 4px; }
+.card-more-hosts { display: flex; align-items: baseline; gap: 14px; margin: 6px 0 0; }
+.card-more-hosts .card-link { margin-top: 0; }
+.card-more-hosts .amp { color: var(--muted); font-weight: 400; }
 
 /* ---------- Kapanış ---------- */
 /* ---------- İletişim ---------- */
