@@ -36,7 +36,7 @@ Tek sayfalık, siyah ve sade ("premium") bir portfolyo. Kaydırdıkça sahne sah
 | 04 | Yazılım | Kod penceresi + yetenekler | Pencere yandan döner, kod satır satır yazılır |
 | 05 | Projeler | Dört proje kartı (aşağıdaki tablo) + "Tüm projeler" (GitHub + Codeberg) | Başlık yazılır, çizgi çizilir, kartlar açılır |
 | 06 | İletişim | `mail@helyosfer.me` | Adres harf harf yazılır |
-| – | Kapanış | "Q.E.D." | Büyüyerek gelir |
+| – | Kapanış | "Q.E.D." + "GitHub'da gör" ve "Codeberg'de gör" düğmeleri | Büyüyerek gelir |
 
 Proje kartları:
 

@@ -491,6 +491,8 @@ h1 {
   color: transparent;
 }
 .outro-sub { font-size: clamp(1rem, 2.2vw, 1.4rem); color: var(--muted); margin-bottom: 2.25rem; }
+/* GitHub ve Codeberg düğmeleri yan yana, sığmazsa alt alta */
+.outro-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
 
 /* ---------- Alt bilgi ---------- */
 .site-footer { padding: 22px 0; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; }
