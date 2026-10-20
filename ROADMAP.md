@@ -1,6 +1,6 @@
 # helyosfer.me — Yol Haritası
 
-Son güncelleme: 15 Ekim 2026
+Son güncelleme: 20 Ekim 2026
 
 Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir oturumda
 önce bunu oku, sonra "Sıradaki işler" bölümünden devam et.
@@ -44,7 +44,7 @@ Proje kartları:
 |---|---|---|---|
 | helyosfer-app | Kişisel finans için yerel çalışan masaüstü çalışma alanı | Python | GitHub |
 | Magnetosphere | Kick moderatör ekipleri için ortak ban listesi (tarayıcı eklentisi) | JavaScript | GitHub |
-| Voyager | discord.js ile yazılmış Discord botu | JavaScript | Kendi sitesi (https://voyager.helyosfer.me/) + GitHub |
+| Voyager | Yapay zekâ destekli Discord botu (soru cevaplama, kanal özeti, görsel denetimi, hazır kurulum, koruma, bildirimler) | JavaScript | Kendi sitesi (https://voyager.helyosfer.me/) + GitHub |
 | Heliopause | DPI bypass aracı | C# | Codeberg |
 
 Bir kartta birden fazla bağlantı olacaksa Voyager kartındaki gibi `<div class="card-links">` içine konur.
