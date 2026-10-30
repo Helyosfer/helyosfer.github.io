@@ -77,7 +77,7 @@ Bunların dışında:
 - [ ] Kullanılan başka programlama dili var mı? Yetenek listesinde ve kod penceresindeki `stack` satırında Python, JavaScript ve C# yazıyor (üçü de projelerden doğrulandı; C# 12 Ekim'de eklendi). Voyager için "Discord Bots" gibi bir yetenek de eklenebilir.
 - [ ] "Hakkımda" sahnesinde şimdilik yalnızca "Matematikçi. Yazılım geliştirici." duruyor. Daha kişisel bir cümle istenir mi?
 - [ ] Magnetosphere için mağaza bağlantısı (Chrome Web Store vb.) var mı? Şu an yalnızca GitHub'a gidiyor.
-- [ ] Silinen sohbet botunun Cloudflare tarafı (30 Ekim): Worker, alt alan adının DNS kaydı, Access uygulaması ve kuralı silindi. **D1 veritabanı (`iletisim`) duruyor**; içinde ziyaretçi mesajları olduğu için silme kararı kullanıcıda (önce `wrangler d1 export` ile yedek). Gemini API anahtarı ve Proton SMTP jetonu kullanıcı tarafından iptal edildi (30 Ekim). Proton MX/SPF kayıtlarına dokunulmamalı.
+- [x] Silinen sohbet botunun Cloudflare tarafı (30 Ekim): Worker, alt alan adının DNS kaydı, Access uygulaması ve kuralı, D1 veritabanı (`iletisim`) silindi. VPS'teki kopyadan Worker klasörü de kaldırıldı. Gemini API anahtarı ve Proton SMTP jetonu kullanıcı tarafından iptal edildi (30 Ekim). Proton MX/SPF kayıtlarına dokunulmamalı.
 
 ### Bilinen kusurlar
 
