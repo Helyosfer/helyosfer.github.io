@@ -140,7 +140,7 @@ export function cevapCoz(yanit) {
 /** Gemini'ye sorar. Hata, zaman aşımı ya da anlaşılmayan yanıtta null döner; çağıran sohbeti devreder. */
 export async function asistanaSor(mesajlar, env, fetchFn = fetch) {
   if (!env.GEMINI_ANAHTARI) return null;
-  const model = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+  const model = env.GEMINI_MODEL || 'gemini-3.5-flash';
   const kontrol = new AbortController();
   const zamanlayici = setTimeout(() => kontrol.abort(), ZAMAN_ASIMI_MS);
   try {

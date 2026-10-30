@@ -23,7 +23,7 @@ ACCESS_TAKIM = "polished-firefly-16bd.cloudflareaccess.com"
 ACCESS_AUD = "942ba046543550643f9db150719cda8f1a27b39f4e01a41aae81e3bb634b5d84"
 # Yapay zekâ asistanının modeli (Google Gemini API). Anahtar tanımlı değilse asistan kapalıdır,
 # her mesaj doğrudan Helyosfer'e gider.
-GEMINI_MODEL = "gemini-3.5-flash-lite"
+GEMINI_MODEL = "gemini-3.5-flash"
 # Gizli değerler (wrangler secret put):
 #   SMTP_SIFRESI    → Proton'da mail@helyosfer.me için oluşturulan SMTP token'ı
 #   GEMINI_ANAHTARI → Google AI Studio'dan alınan Gemini API anahtarı

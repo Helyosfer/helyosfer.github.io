@@ -315,6 +315,7 @@ const chatError = chat.querySelector('.chat-error');
 const chatLauncher = document.querySelector('.chat-launcher');
 const chatDot = chatLauncher.querySelector('.chat-dot');
 const chatHuman = chat.querySelector('.chat-human');
+const chatReset = chat.querySelector('.chat-reset');
 const chatAnnounce = chat.querySelector('[data-chat-announce]');
 
 const chatState = { session: readSession(), messages: [], status: 'acik', assistant: true, sending: false, timer: 0 };
@@ -379,6 +380,7 @@ function renderChat() {
   // Sohbet açıldıktan sonra ad ve iletişim kutuları gizlenir
   chatForm.classList.toggle('has-session', Boolean(chatState.session));
   chatHuman.hidden = !(chatState.session && chatState.assistant);
+  chatReset.hidden = !chatState.session;
   chatLog.scrollTop = chatLog.scrollHeight;
 }
 
@@ -500,6 +502,20 @@ function closeChat() {
   chatLauncher.focus({ preventScroll: true });
 }
 
+function resetChat() {
+  if (chatState.sending) return;
+  chatState.session = null;
+  chatState.messages = [];
+  chatState.status = 'acik';
+  chatState.assistant = true;
+  saveSession();
+  showError('');
+  renderChat();
+  updateDot();
+  schedulePoll();
+  chatInput.focus({ preventScroll: true });
+}
+
 async function sendMessage(event) {
   event.preventDefault();
   const text = chatInput.value.trim();
@@ -595,6 +611,7 @@ document.querySelectorAll('[data-chat-open]').forEach((el) => el.addEventListene
   else openChat(event);
 }));
 chat.querySelector('.chat-close').addEventListener('click', closeChat);
+chatReset.addEventListener('click', resetChat);
 chat.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeChat(); });
 chatForm.addEventListener('submit', sendMessage);
 chatHuman.addEventListener('click', askForHuman);
