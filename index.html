@@ -18,6 +18,9 @@
 </head>
 <body>
 
+  <!-- Klavye: ilk Tab'da görünür, menüyü atlayıp içeriğe gider -->
+  <a class="skip-link" href="#top" data-en="Skip to content">İçeriğe geç</a>
+
   <!-- ÇEVİRİ: Sayfadaki Türkçe metin etiketin içinde, İngilizcesi data-en özelliğinde durur.
        Bir metni değiştirirken ikisini de güncelle. Dil düğmesi (TR/EN) script.js içinde. -->
 
@@ -30,15 +33,16 @@
     <nav class="nav container">
       <a href="#top" class="logo">helyosfer</a>
       <div class="nav-right">
-        <ul class="nav-links">
+        <ul class="nav-links" id="menu">
           <li><a href="#hakkimda" data-en="About">Hakkımda</a></li>
           <li><a href="#matematik" data-en="Skills">Yetenekler</a></li>
           <li><a href="#projeler" data-en="Projects">Projeler</a></li>
+          <li><a href="hizmetler/" data-en="Services">Hizmetler</a></li>
           <li><a href="#iletisim" data-en="Contact">İletişim</a></li>
           <li><a href="https://github.com/Helyosfer?tab=repositories" target="_blank" rel="noopener" class="nav-cta">GitHub</a></li>
         </ul>
         <button class="lang-toggle" aria-label="EN: Switch to English">EN</button>
-        <button class="nav-toggle" aria-label="Menü" aria-expanded="false">
+        <button class="nav-toggle" aria-label="Menü" data-en-label="Menu" aria-expanded="false" aria-controls="menu">
           <span></span><span></span>
         </button>
       </div>
@@ -67,7 +71,7 @@
     <section id="hakkimda" class="pin statement-pin" data-pin>
       <div class="pin-inner">
         <div class="container">
-          <p class="kicker"><span class="num">01</span> <span data-en="About">Hakkımda</span></p>
+          <h2 class="kicker"><span class="num">01</span> <span data-en="About">Hakkımda</span></h2>
           <p class="statement" data-words data-en="Mathematician. Software developer.">Matematikçi. Yazılım geliştirici.</p>
         </div>
       </div>
@@ -78,7 +82,7 @@
     <section class="pin quotes-pin" data-pin>
       <div class="pin-inner">
         <div class="container">
-          <p class="kicker"><span class="num">02</span> <span data-en="Inspiration">İlham</span></p>
+          <h2 class="kicker"><span class="num">02</span> <span data-en="Inspiration">İlham</span></h2>
           <div class="quotes" data-stagger>
             <figure class="quote">
               <blockquote data-en="Mathematics is the queen of the sciences.">Matematik, bilimlerin kraliçesidir.</blockquote>
@@ -129,7 +133,8 @@
           <div>
             <p class="kicker"><span class="num">03</span> <span data-en="Skills">Yetenekler</span></p>
             <h2 data-chars data-en="Mathematics">Matematik</h2>
-            <ul class="skills" data-stagger>
+            <!-- Yetenek adları her iki dilde İngilizce: ekran okuyucu İngilizce okusun -->
+            <ul class="skills" lang="en" data-stagger>
               <li>Advanced Mathematics</li>
               <li>Calculations</li>
               <li>Calculus</li>
@@ -176,7 +181,7 @@
             <p class="kicker"><span class="num">04</span> <span data-en="Skills">Yetenekler</span></p>
             <h2 data-chars class="typed" data-en="Software">Yazılım</h2>
             <!-- DÜZENLE: Kullandığın diğer dilleri buraya <li> olarak ekle -->
-            <ul class="skills" data-stagger>
+            <ul class="skills" lang="en" data-stagger>
               <li>Python</li>
               <li>JavaScript</li>
               <li>C#</li>
@@ -297,6 +302,7 @@
   </footer>
 
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+  <script defer src="ortak.js"></script>
   <script defer src="script.js"></script>
 </body>
 </html>

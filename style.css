@@ -42,10 +42,18 @@ body {
   padding: 72px 0 24px;
   overflow: hidden;
   pointer-events: none;
+  /* Binlerce KaTeX düğümü: içerideki değişiklik sayfanın geri kalanının stil/düzen hesabına taşmasın */
+  contain: strict;
   /* Kenarlarda yumuşakça kaybolsun */
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  /* KaTeX yazı tipleri yüklenene kadar gizli: yoksa formüller yer değiştirir (yerleşim kayması 0,16 idi).
+     script.js yazı tipleri hazır olunca .ready ekler. */
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.8s;
 }
+.formulas.ready { visibility: visible; opacity: 1; }
 
 .formula-row {
   display: flex;
@@ -65,6 +73,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .formula-row { animation: none; }
+  .formulas { transition: none; }
 }
 
 .progress {
@@ -80,6 +89,8 @@ body {
 }
 
 h1, h2, h3 { line-height: 1.05; margin: 0; letter-spacing: -0.04em; }
+/* Büyük yazı ayarında ("Matematikçi.", "çalıştıklarım" gibi) tek başına satırdan uzun kelimeler bölünsün, sayfa yana taşmasın */
+h1, h2, h3, .statement, .quote blockquote { overflow-wrap: anywhere; }
 h2 { font-size: clamp(2.6rem, 7vw, 5rem); font-weight: 700; margin-bottom: 2rem; }
 p { margin: 0 0 1rem; }
 ul { list-style: none; margin: 0; padding: 0; }
@@ -87,7 +98,36 @@ a { color: inherit; }
 
 .container { width: 100%; max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
 
-.kicker { font-size: 0.95rem; font-weight: 500; color: var(--muted); margin-bottom: 1.25rem; }
+/* Ekran okuyucuya söylenen ama görünmeyen metin */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* Klavyeyle ilk Tab'da görünen "İçeriğe geç" bağlantısı: menüyü atlayıp doğrudan içeriğe gider */
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 16px;
+  z-index: 40;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--text);
+  color: #000;
+  font-weight: 500;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: none; }
+
+/* Kayan kartlar ekrana girerken sayfayı yana itmesin (tablette parmakla yana kaydırılabiliyordu).
+   clip, hidden'dan farklı olarak kaydırma alanı oluşturmaz; sabitlenen sahneler (sticky) bozulmaz. */
+main { overflow-x: clip; }
+
+/* Klavyeyle gelinen öğe animasyonun yarısında (soluk, eğik) kalmasın; ekranın en altına da yapışmasın */
+[data-enter]:focus-within { --e: 1 !important; }
+.hero-content:focus-within { opacity: 1; transform: none; }
+a, button { scroll-margin: 72px 0 25vh; }
+
+/* h2 olan etiketler (Hakkımda, İlham) de aynı küçük görünsün */
+.kicker { font-size: 0.95rem; font-weight: 500; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.5; letter-spacing: normal; }
 .num { font-family: var(--mono); font-size: 0.85rem; color: var(--accent); margin-right: 10px; }
 
 /* ---------- Üst menü ---------- */
@@ -108,7 +148,8 @@ a { color: inherit; }
 .logo { font-weight: 600; letter-spacing: -0.02em; text-decoration: none; }
 
 .nav-links { display: flex; align-items: center; gap: 32px; }
-.nav-links a { text-decoration: none; color: var(--muted); font-size: 0.82rem; transition: color 0.2s; }
+/* Dikey iç boşluk görünüşü değiştirmez, dokunma alanını büyütür */
+.nav-links a { padding: 6px 0; text-decoration: none; color: var(--muted); font-size: 0.82rem; transition: color 0.2s; }
 .nav-links a:hover { color: var(--text); }
 .nav-links .nav-cta { padding: 5px 14px; border-radius: 999px; background: var(--text); color: #000; font-weight: 500; }
 .nav-links .nav-cta:hover { color: #000; background: #fff; }
@@ -290,11 +331,13 @@ h1 {
 .quote figcaption::before { content: "— "; color: var(--accent); }
 
 /* ---------- Yetenekler ---------- */
-.split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+/* minmax(0, 1fr): sütun, içindeki uzun bir kelime ya da kod satırı yüzünden ekrandan genişlemesin */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; }
 
 .skills { display: flex; flex-wrap: wrap; gap: 10px; }
 /* Harf harf yazılan başlıklar: bölümün ilk çeyreğinde tamamlanır */
-.char-word { display: inline-block; white-space: nowrap; }
+/* Kelime satıra sığarsa bütün kalır; satırdan uzunsa (büyük yazı ayarı) harflerinden bölünür */
+.char-word { display: inline-block; max-width: 100%; }
 .char {
   --c: clamp(0, calc(var(--p) * 3.6 * var(--n) - var(--i)), 1);
   display: inline-block;
@@ -399,7 +442,7 @@ h1 {
 
 .rise { opacity: var(--e); transform: translateY(calc((1 - var(--e)) * 60px)); }
 
-.projects { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; perspective: 1200px; }
+.projects { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; perspective: 1200px; }
 .projects .card-more { grid-column: 1 / -1; }
 
 .card {
@@ -478,6 +521,10 @@ h1 {
   color: var(--accent);
   animation: caret 1s steps(1) infinite;
 }
+/* Hareket azaltılınca yanıp sönen imleçler durur (WCAG 2.2.2); imleç kurallarından sonra gelmeli */
+@media (prefers-reduced-motion: reduce) {
+  .typed::after, .contact-mail::after { animation: none; }
+}
 
 .outro { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
 .zoom { opacity: var(--e); transform: scale(calc(0.6 + var(--e) * 0.4)); }
@@ -496,15 +543,17 @@ h1 {
 
 /* ---------- Alt bilgi ---------- */
 .site-footer { padding: 22px 0; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; }
-.site-footer .container { display: flex; justify-content: space-between; align-items: center; }
+.site-footer .container { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 24px; }
 .site-footer p { margin: 0; }
-.footer-links { display: flex; gap: 24px; }
-.site-footer a { text-decoration: none; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 4px 24px; }
+.site-footer a { padding: 4px 0; text-decoration: none; }
 .site-footer a:hover { color: var(--text); }
 
-/* ---------- Hareket azaltma tercihi ya da çok kısa ekran (ör. yatay telefon):
-   sahneler sabitlenmez, her şey normal akışta ve görünür ---------- */
-@media (prefers-reduced-motion: reduce), (max-height: 560px) {
+/* ---------- Hareket azaltma tercihi ya da kısa ekran (ör. yatay telefon; adres çubuğu yüzünden görünen alanı
+   ~580 px kalan 360×640 Android ya da iPhone mini): sahneler sabitlenmez, her şey normal akışta ve görünür.
+   Dar ekranda Matematik ve Yazılım sahneleri 680 px'ten kısa alana sığmıyordu (başlık ve terminal kesiliyordu).
+   script.js bölüm yüksekliğine bakarak buna kendiliğinden uyar. ---------- */
+@media (prefers-reduced-motion: reduce), (max-height: 560px), (max-width: 760px) and (max-height: 680px) {
   html { scroll-behavior: auto; }
   .pin, .hero, .statement-pin, .quotes-pin { height: auto; }
   /* relative: sabitlenmez ama içindeki mutlak konumlu süsleri (giriş ışıltısı, parabol) kendi sınırında keser */
@@ -535,7 +584,9 @@ h1 {
   .nav-links.open { display: flex; }
   .nav-links a { font-size: 1rem; }
 
-  .split { grid-template-columns: 1fr; gap: 24px; }
+  .split { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  /* Kod satırları yana kaymaz, alt satıra geçer: klavyeyle kaydırmak gerekmez, odak ekran dışına gitmez */
+  .code { white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: visible; }
   .split-reverse > :first-child { order: 2; }
   /* Dar ekranda yazılar formüllerin tam üstüne düşer; okunaklı kalsın diye formüller kısılır */
   .formulas { --formula-color: rgba(255, 255, 255, 0.11); }
@@ -547,7 +598,7 @@ h1 {
   .flow-equation { font-size: 0.72rem; }
   .skills li { padding: 6px 13px; font-size: 0.88rem; }
   h2 { margin-bottom: 1.25rem; }
-  .projects { grid-template-columns: 1fr; }
+  .projects { grid-template-columns: minmax(0, 1fr); }
   .card-body { padding: 28px; }
   .section { padding-top: 96px; }
 }

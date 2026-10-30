@@ -1,0 +1,638 @@
+/* Hizmetler sayfası. Renkler, menü, düğmeler, kartlar ve giriş animasyonları ../style.css'ten gelir;
+   burada yalnızca bu sayfaya özel olanlar var. */
+
+/* ---------- Kar ---------- */
+.snow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+main, .site-footer { position: relative; z-index: 1; }
+
+/* ---------- Penguen ---------- */
+/* DÜZENLE: penguenin renkleri */
+.tux {
+  --tux-body: #24242c;
+  --tux-belly: #f2f2f5;
+  --tux-orange: #f5a524;
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  /* Siyah zeminde kaybolmasın diye çevresinde hafif bir ışık */
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.35)) drop-shadow(0 10px 24px rgba(191, 155, 255, 0.18));
+}
+.tux-body, .tux-flipper { fill: var(--tux-body); }
+.tux-shine { fill: rgba(255, 255, 255, 0.09); }
+.tux-belly, .tux-eye { fill: var(--tux-belly); }
+.tux-pupils circle { fill: #0b0b0e; }
+.tux-pupils .tux-glint { fill: #fff; }
+.tux-foot, .tux-beak { fill: var(--tux-orange); }
+.tux-mouth { fill: none; stroke: #b86e08; stroke-width: 1.6; stroke-linecap: round; }
+
+.tux-flipper, .tux-foot, .tux-eyes, .tux-pupils { transform-box: fill-box; }
+.tux-flipper { transform-origin: 50% 8%; }
+.tux-flipper-l { transform: rotate(16deg); }
+.tux-flipper-r { transform: rotate(-16deg); }
+
+/* Göz kırpma: her penguen kendi temposunda (--blink) */
+.tux-eyes { transform-origin: center; animation: tux-blink var(--blink, 5s) infinite; }
+@keyframes tux-blink {
+  0%, 94%, 100% { transform: scaleY(1); }
+  97% { transform: scaleY(0.1); }
+}
+
+/* Gözler fareyi izler (--lx, --ly: -1 → 1, hizmetler.js yazar) */
+.tux-pupils {
+  transform: translate(calc(var(--lx, 0) * 3px), calc(var(--ly, 0) * 2.5px));
+  transition: transform 0.15s ease-out;
+}
+
+/* El sallama */
+.tux-wave .tux-flipper-r { animation: tux-wave 2.8s ease-in-out infinite; }
+@keyframes tux-wave {
+  0%, 45%, 100% { transform: rotate(-16deg); }
+  55%, 75% { transform: rotate(-125deg); }
+  65%, 85% { transform: rotate(-100deg); }
+}
+
+/* Yürüme: sağa sola yalpalar, ayaklar sırayla kalkar */
+.tux-walk .tux { transform-origin: 50% 100%; animation: tux-waddle 0.5s ease-in-out infinite alternate; }
+.tux-walk .tux-foot-l { animation: tux-step 0.5s ease-in-out infinite alternate; }
+.tux-walk .tux-foot-r { animation: tux-step 0.5s ease-in-out infinite alternate-reverse; }
+.tux-walk .tux-flipper-l { animation: tux-swing-l 0.5s ease-in-out infinite alternate; }
+.tux-walk .tux-flipper-r { animation: tux-swing-r 0.5s ease-in-out infinite alternate; }
+@keyframes tux-waddle { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+@keyframes tux-step { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+@keyframes tux-swing-l { from { transform: rotate(8deg); } to { transform: rotate(30deg); } }
+@keyframes tux-swing-r { from { transform: rotate(-30deg); } to { transform: rotate(-8deg); } }
+
+/* Karnının üstünde kayma */
+.tux-slide .tux { transform: rotate(80deg); transform-origin: 50% 50%; }
+.tux-slide .tux-flipper-l { transform: rotate(150deg); }
+.tux-slide .tux-flipper-r { transform: rotate(-150deg); }
+
+/* ---------- Giriş ---------- */
+.svc-hero {
+  position: relative;
+  display: grid;
+  /* minmax(0, …): uzun bir kelime ya da terminal satırı sütunu ekrandan genişletmesin */
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 56px;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: 110px;
+  padding-bottom: 80px;
+}
+.svc-hero::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* Bölümün genişliğini aşmasın; aşarsa telefonda sayfa yana kayar */
+  width: 100%;
+  height: 640px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(191, 155, 255, 0.12), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.eyebrow .prompt { color: var(--accent); }
+
+.svc-hero h1 {
+  font-size: clamp(2.5rem, 5.4vw, 4.3rem);
+  letter-spacing: -0.045em;
+  line-height: 1.03;
+}
+.svc-hero h1 .hl {
+  display: block;
+  background: linear-gradient(90deg, #bf9bff, #7cc4ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: 0.08em;
+}
+
+.svc-lead { margin-top: 1.4rem; max-width: 30rem; font-size: clamp(1.05rem, 1.8vw, 1.3rem); color: var(--muted); }
+.svc-hero .hero-actions { justify-content: flex-start; margin-top: 2rem; }
+
+.hero-meta { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 2rem; font-size: 0.88rem; color: var(--muted); }
+.hero-meta li::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 9px; border-radius: 50%; background: #3ddc84; vertical-align: 2px; }
+
+/* Sayfa açılırken giriş öğeleri sırayla yükselir */
+.intro { animation: intro-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.svc-hero-text .intro:nth-child(2) { animation-delay: 0.08s; }
+.svc-hero-text .intro:nth-child(3) { animation-delay: 0.16s; }
+.svc-hero-text .intro:nth-child(4) { animation-delay: 0.24s; }
+.svc-hero-text .intro:nth-child(5) { animation-delay: 0.32s; }
+.svc-hero-visual.intro { animation-delay: 0.2s; }
+@keyframes intro-rise { from { opacity: 0; transform: translateY(32px); } }
+
+/* Terminal ve yanındaki penguen */
+/* Penguen terminalin sağ alt köşesinde durur; soldaki ASCII penguenin üstüne binmesin */
+.svc-hero-visual { position: relative; padding: 0 60px 70px 0; }
+.live-terminal { transform: perspective(1200px) rotateY(-8deg); }
+.term-screen {
+  height: 19.5em;
+  white-space: pre-wrap;
+  overflow: hidden;
+}
+.term-screen .t-user { color: #3ddc84; font-weight: 600; }
+.term-screen .t-path { color: #7cc4ff; }
+.term-screen .t-logo { color: #f5c542; }
+.term-screen .t-key { color: var(--accent); }
+.term-screen .t-ok { color: #3ddc84; }
+.term-screen .t-dim { color: var(--muted); }
+.term-screen .t-b1 { color: #ff5f57; }
+.term-screen .t-b2 { color: #febc2e; }
+.term-screen .t-b3 { color: #28c840; }
+.term-screen .t-b4 { color: #7cc4ff; }
+.term-screen .t-b5 { color: #bf9bff; }
+.term-cursor { display: inline-block; width: 0.6em; background: var(--text); animation: caret 1s steps(1) infinite; }
+
+.hero-tux {
+  position: absolute;
+  right: -10px;
+  bottom: 0;
+  width: 150px;
+  z-index: 2;
+  animation: tux-bob 3.6s ease-in-out infinite;
+}
+@keyframes tux-bob { 50% { transform: translateY(-6px); } }
+
+.bubble {
+  position: absolute;
+  right: 118px;
+  bottom: 150px;
+  z-index: 3;
+  margin: 0;
+  padding: 7px 14px;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--text);
+  color: #000;
+  font-size: 0.9rem;
+  font-weight: 600;
+  animation: bubble 7s ease-in-out 1.2s infinite both;
+}
+@keyframes bubble {
+  0% { opacity: 0; transform: translateY(8px) scale(0.85); }
+  6%, 40% { opacity: 1; transform: none; }
+  48%, 100% { opacity: 0; transform: translateY(-4px); }
+}
+
+/* ---------- Araçlar şeridi ---------- */
+.tools {
+  position: relative;
+  overflow: hidden;
+  padding: 26px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: rgba(13, 13, 15, 0.6);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.tools-row { display: flex; gap: 14px; width: max-content; animation: formula-drift 50s linear infinite; }
+.tools-row li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.tools-row li::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--dot, var(--muted)); box-shadow: 0 0 10px var(--dot, transparent); }
+.t-ubuntu { --dot: #e95420; }
+.t-debian { --dot: #d70a53; }
+.t-arch { --dot: #1793d1; }
+.t-mint { --dot: #87cf3e; }
+.t-windows { --dot: #4c8dff; }
+.t-docker { --dot: #2496ed; }
+.t-pi { --dot: #c51a4a; }
+.t-proxmox { --dot: #e57000; }
+.t-pihole { --dot: #96060c; }
+.t-tailscale { --dot: #f2f2f5; }
+.t-cloudflare { --dot: #f38020; }
+.t-minecraft { --dot: #62b47a; }
+
+/* ---------- Hizmet kartları ---------- */
+/* Her kartın kendi rengi (--hue): ikon, üst çizgi, madde işaretleri ve parlama */
+.svc-blue { --hue: #4c8dff; }
+.svc-green { --hue: #3ddc84; }
+.svc-purple { --hue: #bf9bff; }
+.svc-orange { --hue: #ff8a3d; }
+.svc-yellow { --hue: #f5c542; }
+.svc-teal { --hue: #4dd8e6; }
+
+.services {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 64px 20px;
+  padding-top: 24px;
+  perspective: 1200px;
+}
+.services .svc:nth-child(3n + 1) { --from: -1; }
+.services .svc:nth-child(3n + 3) { --from: 1; }
+
+.svc { position: relative; }
+
+.svc-card {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  padding: 32px 30px 30px;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+/* Üst kenarda kartın renginde ince bir ışık */
+.svc-card::before, .way::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hue), transparent);
+}
+.svc:hover .svc-card {
+  border-color: color-mix(in srgb, var(--hue) 55%, transparent);
+  box-shadow: 0 0 60px -12px color-mix(in srgb, var(--hue) 45%, transparent);
+}
+
+.svc-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 20px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--hue) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hue) 30%, transparent);
+}
+.svc-icon svg { width: 24px; height: 24px; fill: none; stroke: var(--hue); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.svc-icon svg circle[r=".6"] { fill: var(--hue); }
+
+.svc-card h3, .way h3 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 16px; }
+.svc-card li { position: relative; padding-left: 18px; margin-bottom: 8px; color: var(--muted); font-size: 0.97rem; }
+.svc-card li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--hue); }
+
+/* Kartın arkasında saklanan penguen: ekrana girince bir kez, fareyle üstüne gelince her zaman bakar */
+.peek {
+  position: absolute;
+  top: 0;
+  right: 28px;
+  z-index: 0;
+  width: 60px;
+  --blink: 3.2s;
+  transition: transform 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.svc:nth-child(even) .peek { right: auto; left: 30px; }
+.svc:hover .peek, .svc.peeking .peek { transform: translateY(-56%); }
+.svc:hover .peek .tux-flipper-r { animation: tux-wave 1.6s ease-in-out infinite; }
+
+/* ---------- Penguen geçidi ---------- */
+.parade { position: relative; padding-top: 150px; overflow: hidden; }
+.parade-text {
+  max-width: 16em;
+  overflow-wrap: anywhere;
+  margin: 0 auto;
+  text-align: center;
+  font-size: clamp(2rem, 5.6vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+.parade-text > span { display: block; }
+.parade-sub { color: var(--muted); }
+
+.ice {
+  position: relative;
+  height: 170px;
+  margin-top: 30px;
+}
+/* Buz: penguenlerin yürüdüğü parlak zemin */
+.ice::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 26px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(180, 225, 255, 0.55) 20%, rgba(255, 255, 255, 0.8) 50%, rgba(180, 225, 255, 0.55) 80%, transparent);
+  box-shadow: 0 0 24px rgba(160, 215, 255, 0.45);
+}
+
+/* DÜZENLE: her penguenin boyu (--size), geçiş süresi (--dur) ve gecikmesi (--delay) */
+.walker {
+  --size: 70px;
+  position: absolute;
+  left: 0;
+  bottom: 27px;
+  width: var(--size);
+  animation: walk-across var(--dur, 22s) linear var(--delay, 0s) infinite both;
+}
+.walker-1 { --size: 76px; --dur: 24s; --delay: -4s; }
+.walker-2 { --size: 56px; --dur: 30s; --delay: -19s; --blink: 4.1s; }
+.walker-3 { --size: 66px; --dur: 9s; --delay: -2s; bottom: 6px; }
+.walker-4 { --size: 46px; --dur: 26s; --delay: -11s; --blink: 3.4s; }
+.walker-4.tux-walk .tux { animation-duration: 0.36s; }
+
+@keyframes walk-across {
+  from { transform: translateX(-140px); }
+  to { transform: translateX(calc(100vw + 40px)); }
+}
+
+/* Kayan penguenin arkasında hız çizgileri */
+.walker-3::before {
+  content: "";
+  position: absolute;
+  right: 92%;
+  top: 46%;
+  width: 90px;
+  height: 14px;
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0 2px, transparent 2px 6px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000);
+  mask-image: linear-gradient(90deg, transparent, #000);
+}
+
+/* ---------- Nasıl çalışırım ---------- */
+.ways { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; perspective: 1200px; }
+.ways .way:nth-child(1) { --from: -1; }
+.ways .way:nth-child(2) { --from: 1; }
+.way { position: relative; overflow: hidden; padding: 32px 30px; }
+.way h3 { margin-bottom: 10px; }
+.way p { margin: 0; color: var(--muted); }
+
+/* Süreç adımları: numaralar ince bir çizgiyle birbirine bağlanır; çizgi ekrana girerken soldan sağa çizilir */
+.steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  margin: 72px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.steps::before {
+  content: "";
+  position: absolute;
+  top: 21px;
+  left: 22px;
+  right: calc(33.33% - 22px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.2));
+  transform: scaleX(var(--e));
+  transform-origin: left;
+}
+.steps li {
+  --t: clamp(0, calc(var(--e) * 3.4 - var(--i)), 1);
+  position: relative;
+  opacity: var(--t);
+  transform: translateY(calc((1 - var(--t)) * 28px));
+}
+.steps li:nth-child(1) { --i: 0; }
+.steps li:nth-child(2) { --i: 1; }
+.steps li:nth-child(3) { --i: 2; }
+.step-num {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(191, 155, 255, 0.45);
+  border-radius: 50%;
+  background: var(--bg);
+  font-family: var(--mono);
+  color: var(--accent);
+}
+.steps h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px; }
+.steps p { margin: 0; color: var(--muted); max-width: 20rem; }
+
+/* ---------- İletişim ---------- */
+.svc-contact { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px; align-items: end; }
+.contact-tux { width: 170px; margin-bottom: 10px; --blink: 4.4s; animation: tux-bob 3.6s ease-in-out infinite; }
+
+.contact-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.chat-cta { display: inline-flex; align-items: center; gap: 10px; border: 0; font-family: var(--sans); cursor: pointer; }
+.chat-cta svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.contact-alt { margin: 0; color: var(--muted); font-size: 0.95rem; }
+.contact-alt a { color: var(--text); }
+
+/* ---------- Sohbet penceresi ---------- */
+/* Sağ altta penguenli düğme */
+.chat-launcher {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 30;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #2a2340, #0d0d0f 70%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 6px rgba(191, 155, 255, 0.08);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s;
+  /* backwards: animasyon bitince transform'u bırakır ki üstüne gelince kalkma çalışsın */
+  animation: intro-rise 0.8s 1s backwards;
+}
+.chat-launcher:hover { transform: translateY(-3px); box-shadow: 0 16px 44px rgba(0, 0, 0, 0.6), 0 0 0 8px rgba(191, 155, 255, 0.16); }
+/* Penguen düğmenin altından başını çıkarır */
+.chat-launcher-tux { position: absolute; left: 50%; top: 9px; width: 52px; transform: translateX(-50%); --blink: 3.8s; }
+.chat-launcher-tux .tux { filter: none; }
+.chat-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #0d0d0f;
+  border-radius: 50%;
+  background: #3ddc84;
+  box-shadow: 0 0 12px #3ddc84;
+}
+.chat-dot[hidden] { display: none; }
+
+.chat {
+  position: fixed;
+  right: 24px;
+  bottom: 104px;
+  z-index: 31;
+  display: flex;
+  flex-direction: column;
+  width: min(380px, calc(100vw - 32px));
+  height: min(560px, calc(100vh - 140px));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  background: rgba(13, 13, 15, 0.96);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7), 0 0 80px -30px rgba(191, 155, 255, 0.4);
+  overflow: hidden;
+  transform-origin: 100% 100%;
+  animation: chat-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.chat[hidden] { display: none; }
+@keyframes chat-in { from { opacity: 0; transform: translateY(16px) scale(0.92); } }
+
+.chat-head { display: flex; align-items: center; gap: 12px; padding: 14px 14px 14px 16px; border-bottom: 1px solid var(--border); }
+.chat-avatar { position: relative; display: block; flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; background: #1d1a2a; overflow: hidden; }
+.chat-avatar .tux { position: absolute; left: 50%; top: 3px; width: 50px; transform: translateX(-50%); filter: none; }
+/* Çevrim içi gibi görünmesin diye yeşil nokta yok; yalnızca isim ve kısa açıklama */
+.chat-head-text { flex: 1; min-width: 0; }
+.chat-title { margin: 0; font-weight: 600; }
+.chat-sub { margin: 0; font-size: 0.8rem; color: var(--muted); }
+.chat-close { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; }
+.chat-close:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+.chat-close svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+.chat-log { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
+.chat-thread { display: flex; flex-direction: column; gap: 8px; }
+.msg {
+  max-width: 85%;
+  margin: 0;
+  padding: 9px 13px;
+  border-radius: 18px;
+  font-size: 0.93rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* 0,75: mor balonda da okunur (0,6'da kontrast 3,9:1 idi, şimdi 5,8:1) */
+.msg time { display: block; margin-top: 3px; font-size: 0.72rem; opacity: 0.75; }
+.msg-in { align-self: flex-start; background: #1f1f24; border-bottom-left-radius: 6px; }
+.msg-out { align-self: flex-end; background: var(--accent); color: #0b0614; border-bottom-right-radius: 6px; }
+.msg-out.is-pending { opacity: 0.55; }
+/* Asistanın balonu benimkinden ayrışsın: mavi kenar */
+.msg-bot { background: #172231; box-shadow: inset 0 0 0 1px rgba(124, 196, 255, 0.22); }
+.msg-who { display: block; margin-bottom: 2px; font-size: 0.72rem; font-weight: 600; color: var(--accent); }
+.msg-bot .msg-who { color: #7cc4ff; }
+.msg-typing { display: flex; gap: 4px; padding: 13px 14px; }
+.msg-typing i { width: 6px; height: 6px; border-radius: 50%; background: #7cc4ff; animation: typing 1.2s infinite ease-in-out; }
+.msg-typing i:nth-child(2) { animation-delay: 0.15s; }
+.msg-typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typing { 0%, 60%, 100% { opacity: 0.25; transform: none; } 30% { opacity: 1; transform: translateY(-3px); } }
+
+.chat-human {
+  display: block;
+  margin: 0 0 8px auto;
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  font: 500 0.78rem var(--sans);
+  cursor: pointer;
+}
+.chat-human:hover { border-color: var(--text); }
+.chat-human[hidden] { display: none; }
+.msg-system { align-self: center; margin: 4px 0; font-size: 0.78rem; color: var(--muted); text-align: center; }
+
+.chat-form { padding: 12px 14px 12px; border-top: 1px solid var(--border); }
+.chat-contact { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.chat-form.has-session .chat-contact { display: none; }
+.chat-contact input, .chat-compose textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: #121215;
+  color: var(--text);
+  font: 0.88rem var(--sans);
+}
+.chat-contact input:focus, .chat-compose textarea:focus { outline: none; border-color: var(--accent); }
+.chat-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.chat-compose { display: flex; align-items: flex-end; gap: 8px; }
+.chat-compose textarea { resize: none; overflow-y: hidden; font-size: 0.93rem; line-height: 1.4; max-height: 140px; }
+.chat-send {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--text);
+  color: #000;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.chat-send:hover { transform: scale(1.06); }
+.chat-send svg { width: 18px; height: 18px; fill: currentColor; }
+.chat-form.is-sending .chat-send { opacity: 0.5; pointer-events: none; }
+.chat-error { margin: 8px 0 0; font-size: 0.8rem; color: #ff9b9b; }
+.chat-error[hidden] { display: none; }
+/* Google'a gönderim notu önemli: yaşlı ziyaretçiler de rahat okusun */
+.chat-note { margin: 8px 0 0; font-size: 0.78rem; line-height: 1.4; color: var(--muted); }
+
+/* ---------- Hareket azaltma tercihi ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .intro, .bubble, .hero-tux, .contact-tux, .tools-row, .walker, .chat, .chat-launcher,
+  .tux-eyes, .tux *, .tux-walk .tux, .term-cursor, .msg-typing i { animation: none !important; }
+  .bubble { opacity: 1; }
+  /* Penguenler yürümez; buzun üstünde dağınık durur */
+  .walker-1 { transform: translateX(8vw); }
+  .walker-2 { transform: translateX(34vw); }
+  .walker-3 { transform: translateX(58vw); }
+  .walker-4 { transform: translateX(82vw); }
+  .tools-row { flex-wrap: wrap; width: auto; justify-content: center; padding: 0 24px; }
+  .tools { -webkit-mask-image: none; mask-image: none; }
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 960px) {
+  .services { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .services .svc:nth-child(n) { --from: 0; }
+  .services .svc:nth-child(odd) { --from: -1; }
+  .services .svc:nth-child(even) { --from: 1; }
+  .svc-hero { grid-template-columns: minmax(0, 1fr); gap: 40px; min-height: 0; padding-top: 120px; }
+  .svc-hero-visual { max-width: 560px; }
+}
+
+/* ---------- Mobil ---------- */
+@media (max-width: 760px) {
+  .services, .ways { grid-template-columns: minmax(0, 1fr); }
+  /* Telefonda adımlar alt alta; çizgi numaraların arasından dikey iner */
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 26px; margin-top: 56px; }
+  .steps::before { top: 22px; bottom: 60px; left: 21px; right: auto; width: 1px; height: auto; transform: scaleY(var(--e)); transform-origin: top; background: linear-gradient(180deg, var(--accent), rgba(255, 255, 255, 0.2)); }
+  .steps li { padding-left: 64px; }
+  .step-num { position: absolute; left: 0; top: 0; margin: 0; }
+  .services .svc:nth-child(n), .ways .way:nth-child(n) { --from: 0; }
+  .services { gap: 56px; }
+  .svc-hero { padding-top: 96px; padding-bottom: 56px; }
+  .svc-hero-visual { padding: 0 24px 56px 0; }
+  .live-terminal { transform: none; }
+  .term-screen { font-size: 0.68rem; padding: 16px; }
+  .hero-tux { width: 96px; right: -8px; }
+  .bubble { right: 74px; bottom: 96px; font-size: 0.8rem; }
+  .svc-card, .way { padding: 26px 24px; }
+  .parade { padding-top: 100px; }
+  .ice { height: 130px; }
+  .walker-1 { --size: 58px; }
+  .walker-2 { --size: 44px; }
+  .walker-3 { --size: 50px; }
+  .walker-4 { --size: 38px; }
+  .svc-contact { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .contact-tux { width: 110px; justify-self: end; }
+
+  /* Telefonda sohbet penceresi ekranın tamamını kaplar */
+  .chat-launcher { right: 16px; bottom: 16px; width: 58px; height: 58px; }
+  .chat-launcher-tux { width: 48px; }
+  .chat { inset: 0; width: auto; height: auto; border: 0; border-radius: 0; transform-origin: 50% 100%; }
+  body.chat-open { overflow: hidden; }
+  body.chat-open .chat-launcher { display: none; }
+  .chat-contact { grid-template-columns: 1fr; }
+  /* iOS, 16 pikselden küçük yazılı kutuya dokununca sayfayı büyütür */
+  .chat-contact input, .chat-compose textarea { font-size: 16px; }
+}

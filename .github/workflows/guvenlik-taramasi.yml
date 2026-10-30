@@ -1,0 +1,80 @@
+# İletişim Worker'ının güvenlik taraması: birim testleri + Nuclei + OWASP ZAP.
+# Tarama canlıya değil, CI'da çalışan yerel kopyaya (wrangler dev) yapılır; canlı veritabanına, Gemini'ye
+# ve e-postaya hiçbir şey gitmez. Gizli değer gerekmez.
+name: Güvenlik taraması
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "iletisim-worker/**"
+      - ".github/workflows/guvenlik-taramasi.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  tarama:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: iletisim-worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: iletisim-worker/package-lock.json
+
+      - run: npm ci
+      - run: npm test
+
+      # Tarama için ayrı yapılandırma: hız sınırları yükseltilir (yoksa tarayıcı ilk 5 istekten sonra yalnızca 429 görür)
+      - name: Tarama yapılandırması
+        run: |
+          sed -E 's/limit = [0-9]+/limit = 100000/' wrangler.toml > wrangler.tarama.toml
+          npx wrangler d1 migrations apply iletisim --local -c wrangler.tarama.toml
+
+      # 8787: üretimdeki gibi (panel kilitli). 8788: GELISTIRME=1 (panel açık, ZAP ve başlık denetimi için).
+      - name: Yerel Worker'ları başlat
+        run: |
+          npx wrangler dev -c wrangler.tarama.toml --ip 127.0.0.1 --port 8787 --local-upstream 127.0.0.1:8787 \
+            --var IZINLI_KOKENLER:http://127.0.0.1:5500 > /tmp/kilitli.log 2>&1 &
+          npx wrangler dev -c wrangler.tarama.toml --ip 127.0.0.1 --port 8788 --local-upstream 127.0.0.1:8788 \
+            --inspector-port 9230 --var IZINLI_KOKENLER:http://127.0.0.1:5500 --var GELISTIRME:1 > /tmp/acik.log 2>&1 &
+          for port in 8787 8788; do
+            for i in $(seq 1 60); do curl -s -o /dev/null "http://127.0.0.1:$port/" && break; sleep 1; done
+          done
+
+      - name: Nuclei (panel kilitli kopya)
+        run: |
+          docker run --rm --network host -v "$PWD/guvenlik/nuclei:/sablon:ro" projectdiscovery/nuclei:v3.3.7 \
+            -t /sablon -u http://127.0.0.1:8787 -tags iletisim -etags yerel-panel \
+            -var koken=http://127.0.0.1:5500 -disable-update-check -silent -jsonl -o /dev/stdout | tee nuclei-kilitli.jsonl
+          test ! -s nuclei-kilitli.jsonl || { echo "Nuclei açık buldu"; exit 1; }
+
+      # Panel açıkken: başlıklar ve CSRF koruması (x-panel + köken) gerçekten denenir
+      - name: Nuclei (panel başlıkları ve CSRF)
+        run: |
+          docker run --rm --network host -v "$PWD/guvenlik/nuclei:/sablon:ro" projectdiscovery/nuclei:v3.3.7 \
+            -t /sablon -u http://127.0.0.1:8788 -tags yerel-panel,csrf -disable-update-check -silent -jsonl -o /dev/stdout | tee nuclei-panel.jsonl
+          test ! -s nuclei-panel.jsonl || { echo "Nuclei açık buldu"; exit 1; }
+
+      - name: OWASP ZAP
+        run: |
+          mkdir -p guvenlik/rapor && chmod 777 guvenlik guvenlik/rapor
+          docker run --rm --network host -v "$PWD/guvenlik:/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:2.16.0 \
+            zap.sh -cmd -autorun /zap/wrk/zap-otomasyon.yaml
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guvenlik-raporu-tarama
+          path: |
+            iletisim-worker/guvenlik/rapor/
+            iletisim-worker/nuclei-*.jsonl
+            /tmp/kilitli.log
+            /tmp/acik.log

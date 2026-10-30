@@ -1,0 +1,101 @@
+# OWASP ZAP Automation Framework planı: İletişim Worker'ını YEREL kopyasında tarar.
+# Canlıya karşı çalıştırma: aktif tarama yüzlerce sohbet açar, hız sınırlarına takılır ve bildirim e-postası
+# gönderebilir. CI bunu wrangler dev üzerinde, hız sınırları yükseltilmiş ayrı bir yapılandırmayla çalıştırır
+# (.github/workflows/guvenlik-taramasi.yml).
+#
+# Elle çalıştırma (iletisim-worker klasöründe, yerel Worker 127.0.0.1:8788'de GELISTIRME=1 ile açıkken):
+#   docker run --rm --network host -v "$PWD/guvenlik:/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:2.16.0 \
+#     zap.sh -cmd -autorun /zap/wrk/zap-otomasyon.yaml
+
+env:
+  contexts:
+    - name: iletisim
+      urls:
+        - http://127.0.0.1:8788
+      includePaths:
+        - "http://127.0.0.1:8788/v1/.*"
+        - "http://127.0.0.1:8788/admin.*"
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  # Sohbet API'si yalnızca izinli Origin ile cevap verir; panelin yazma uçları x-panel başlığı ister.
+  - type: replacer
+    parameters:
+      deleteAllRules: true
+    rules:
+      - description: Izinli koken
+        matchType: req_header
+        matchString: Origin
+        replacementString: http://127.0.0.1:5500
+      - description: Panel basligi
+        matchType: req_header
+        matchString: x-panel
+        replacementString: "1"
+
+  - type: passiveScan-config
+    parameters:
+      maxAlertsPerRule: 10
+      scanOnlyInScope: true
+
+  - type: openapi
+    parameters:
+      apiFile: /zap/wrk/openapi.yaml
+      targetUrl: http://127.0.0.1:8788
+      context: iletisim
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 2
+
+  - type: activeScan
+    parameters:
+      context: iletisim
+      maxRuleDurationInMins: 2
+      maxScanDurationInMins: 15
+      threadPerHost: 2
+    policyDefinition:
+      defaultStrength: medium
+      defaultThreshold: medium
+      rules:
+        # Statik dosya / sunucu türü kuralları burada anlamsız; enjeksiyon kuralları açık kalır
+        - id: 10045   # Kaynak kodu ifşası (/WEB-INF)
+          threshold: off
+        - id: 0       # Dizin gezinme
+          threshold: medium
+        - id: 40018   # SQL enjeksiyonu
+          threshold: low
+          strength: high
+        - id: 40012   # Yansıyan XSS
+          threshold: low
+        - id: 40014   # Kalıcı XSS
+          threshold: low
+        - id: 90019   # Sunucu tarafı kod enjeksiyonu
+          threshold: low
+        - id: 90020   # Uzaktan işletim sistemi komutu
+          threshold: low
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: /zap/wrk/rapor
+      reportFile: zap-rapor
+    risks: [high, medium, low, info]
+
+  - type: report
+    parameters:
+      template: sarif-json
+      reportDir: /zap/wrk/rapor
+      reportFile: zap-rapor
+
+  # Yüksek riskli bir uyarı varsa iş başarısız olur
+  - type: exitStatus
+    parameters:
+      errorLevel: High
+      warnLevel: Medium

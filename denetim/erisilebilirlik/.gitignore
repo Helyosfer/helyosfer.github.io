@@ -1,0 +1,5 @@
+node_modules/
+rapor/
+sonuclar/
+lighthouse-raporu/
+.lighthouseci/

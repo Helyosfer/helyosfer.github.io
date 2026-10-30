@@ -1,0 +1,84 @@
+# Erişilebilirlik ve duyarlılık denetimi: Playwright + axe (5 kırılım noktası), Pa11y, Lighthouse CI.
+# Siteyi CI içinde yerel bir sunucudan açar; canlı siteye ve iletişim Worker'ına dokunmaz.
+name: Erişilebilirlik
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "index.html"
+      - "style.css"
+      - "script.js"
+      - "ortak.js"
+      - "hizmetler/**"
+      - "denetim/erisilebilirlik/**"
+      - ".github/workflows/erisilebilirlik.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: denetim/erisilebilirlik
+
+jobs:
+  playwright-axe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: denetim/erisilebilirlik/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+        env:
+          CI: "1"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erisilebilirlik-playwright
+          path: |
+            denetim/erisilebilirlik/rapor/
+            denetim/erisilebilirlik/sonuclar/
+
+  pa11y:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: denetim/erisilebilirlik/package-lock.json
+      - run: npm ci
+      - name: Siteyi aç
+        run: python3 -m http.server 5510 --bind 127.0.0.1 --directory ../.. &
+      - run: for i in $(seq 30); do curl -sf http://127.0.0.1:5510/ >/dev/null && break; sleep 1; done
+      - run: npm run pa11y
+
+  lighthouse:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        cihaz: [mobil, masaustu]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: denetim/erisilebilirlik/package-lock.json
+      - run: npm ci
+      - run: npm run ${{ matrix.cihaz == 'masaustu' && 'lighthouse:masaustu' || 'lighthouse' }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-${{ matrix.cihaz }}
+          path: denetim/erisilebilirlik/lighthouse-raporu/

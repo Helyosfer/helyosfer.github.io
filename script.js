@@ -1,83 +1,10 @@
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
-// ---------- Kaydırmaya bağlı animasyonlar ----------
-// Kelimeleri tek tek <span> içine al ki sırayla yanabilsinler; her cümle kendi satırında
-const HIGHLIGHT_WORDS = /^(matematikçi|usta|mathematician|master)/i;
-
-function splitWords(el, text) {
-  const words = text.trim().split(/\s+/);
-  el.textContent = '';
-  words.forEach((word, i) => {
-    const span = document.createElement('span');
-    span.className = HIGHLIGHT_WORDS.test(word) ? 'word hl' : 'word';
-    span.textContent = word;
-    span.style.setProperty('--i', i);
-    span.style.setProperty('--n', words.length);
-    el.append(span, ' ');
-    if (word.endsWith('.') && i < words.length - 1) el.append(document.createElement('br'));
-  });
-}
-
-// Başlığı harf harf <span> içine al ki kaydırdıkça "yazılsın"
-function splitChars(el, text) {
-  el.textContent = '';
-  let index = 0;
-  // Harfler kelime kelime gruplanır ki satır yalnızca boşluklardan kırılsın
-  text.split(' ').forEach((word, w) => {
-    if (w > 0) el.append(' ');
-    const group = document.createElement('span');
-    group.className = 'char-word';
-    [...word].forEach((char) => {
-      const span = document.createElement('span');
-      span.className = 'char';
-      span.textContent = char;
-      span.style.setProperty('--i', index++);
-      span.style.setProperty('--n', text.length);
-      group.append(span);
-    });
-    index++;
-    el.append(group);
-  });
-}
+// Ana sayfa. Ortak kod (dil, harf bölme, kaydırma çubuğu, menü, çerçeve koruması) ortak.js'te; o bu dosyadan önce yüklenir.
 
 // ---------- Dil (TR / EN) ----------
-// Türkçe metin HTML'de, İngilizcesi data-en özelliğinde durur
-const PAGE_TITLES = {
+initLanguage({
   tr: 'Helyosfer — Matematikçi & Yazılım Geliştirici',
   en: 'Helyosfer — Mathematician & Software Developer',
-};
-const langToggle = document.querySelector('.lang-toggle');
-const translatable = [...document.querySelectorAll('[data-en]')];
-translatable.forEach((el) => { el.dataset.tr = el.textContent; });
-
-function setLanguage(lang) {
-  document.documentElement.lang = lang;
-  document.title = PAGE_TITLES[lang];
-  translatable.forEach((el) => {
-    if (el.hasAttribute('data-words')) splitWords(el, el.dataset[lang]);
-    else if (el.hasAttribute('data-chars')) splitChars(el, el.dataset[lang]);
-    else el.textContent = el.dataset[lang];
-  });
-  // Düğme, geçilecek diğer dili gösterir
-  langToggle.textContent = lang === 'tr' ? 'EN' : 'TR';
-  langToggle.setAttribute('aria-label', lang === 'tr' ? 'EN: Switch to English' : 'TR: Türkçeye geç');
-}
-
-function savedLanguage() {
-  try { return localStorage.getItem('lang'); } catch { return null; }
-}
-
-langToggle.addEventListener('click', () => {
-  const next = document.documentElement.lang === 'tr' ? 'en' : 'tr';
-  setLanguage(next);
-  try { localStorage.setItem('lang', next); } catch {}
 });
-
-setLanguage(savedLanguage() === 'en' ? 'en' : 'tr');
-
-// Çevirisi olmayan ama harf harf yazılan metinler (e-posta adresi)
-document.querySelectorAll('[data-chars]:not([data-en])').forEach((el) => splitChars(el, el.textContent.trim()));
 
 // ---------- Arka planda kayan formüller ----------
 // Kalkülüsün tanıdık formülleri, LaTeX ile yazılıp KaTeX ile dizilir
@@ -108,16 +35,23 @@ if (window.katex) {
   const rendered = FORMULAS.map((tex) =>
     `<span class="formula">${katex.renderToString(String.raw`\displaystyle ` + tex, { throwOnError: false })}</span>`
   );
+  // Satırın yarısı ekrandan geniş olduğu sürece döngü dikişsiz kalır. Bir formül en az ~200 px tuttuğu için dar ekranda
+  // daha az formül yeter (telefonda 16 yerine 6: arka plan ~%60 daha az DOM). Süre de orantılı kısalır ki hız aynı kalsın.
+  const perRow = Math.min(rendered.length, Math.max(6, Math.ceil(window.innerWidth / 110)));
   for (let row = 0; row < FORMULA_ROWS; row++) {
     // Her satır listeye farklı bir yerden başlar ve farklı hızda kayar
     const offset = (row * 5) % rendered.length;
-    const half = [...rendered.slice(offset), ...rendered.slice(0, offset)].join('');
+    const half = [...rendered.slice(offset), ...rendered.slice(0, offset)].slice(0, perRow).join('');
     const line = document.createElement('div');
     line.className = 'formula-row';
-    line.style.setProperty('--duration', `${150 + ((row * 37) % 90)}s`);
+    line.style.setProperty('--duration', `${((150 + ((row * 37) % 90)) * perRow) / rendered.length}s`);
     line.innerHTML = half + half;
     formulaLayer.append(line);
   }
+  // Katman yazı tipleri yüklenince görünür (style.css → .formulas). Önce düzeni okumak yazı tiplerinin
+  // yüklenmesini başlatır; yoksa fonts.ready, yükleme başlamadan çözülebilirdi.
+  void formulaLayer.offsetWidth;
+  document.fonts.ready.then(() => formulaLayer.classList.add('ready'));
 }
 
 // Sırayla belirecek öğelere sıra numarası ver
@@ -233,6 +167,37 @@ for (let k = 0; k < FLOW_LINES + FLOW_CORE_LINES; k++) {
   flowLines.push({ points, phase: Math.random(), width: 0.55 + Math.random() * 0.45, beads: [0, 0] });
 }
 
+// Şeritlerin parçaları: değişmeyen bilgiler (konum, kalınlık) bir kez hesaplanır
+const FLOW_CHUNK_LENGTH = FLOW_STEPS / FLOW_CHUNKS;
+const FLOW_SHADES = 64;
+const flowChunks = [];
+for (const line of flowLines) {
+  for (let c = 0; c < FLOW_CHUNKS; c++) {
+    const along = (c + 0.5) / FLOW_CHUNKS;
+    flowChunks.push({
+      line,
+      start: c * FLOW_CHUNK_LENGTH,
+      end: 0,
+      radius: 0,
+      depth: 0,
+      widthFactor: 0.7 + 4.6 * line.width * Math.sin(Math.PI * along) ** 0.8,
+      colors: null, // parça tam görünürken yarıçapı sabittir; renk dizgileri gölge basamağına göre saklanır
+    });
+  }
+}
+const visibleChunks = [];
+
+function chunkColor(chunk, shade) {
+  const step = Math.round(shade * FLOW_SHADES);
+  const full = chunk.end - chunk.start === FLOW_CHUNK_LENGTH;
+  if (full && chunk.colors && chunk.colors[step]) return chunk.colors[step];
+  const k = step / FLOW_SHADES;
+  const [red, green, blue] = flowColor(chunk.radius);
+  const color = `rgb(${Math.round(red * k)}, ${Math.round(green * k)}, ${Math.round(blue * k)})`;
+  if (full) (chunk.colors ||= [])[step] = color;
+  return color;
+}
+
 function resizeFlow() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   flowCanvas.width = Math.round(flowCanvas.clientWidth * dpr);
@@ -272,33 +237,26 @@ function drawFlow(time) {
   flowCtx.lineTo(centerX, baseY - heightScale * progress);
   flowCtx.stroke();
 
-  // Şeritleri parçalara böl ve arkadan öne doğru sırala ki derinlik doğru görünsün
-  const chunkLength = FLOW_STEPS / FLOW_CHUNKS;
-  const chunks = [];
+  // Akışla sürüklenen iki küre: her şerit üzerindeki güncel konumları
   for (const line of flowLines) {
-    // Akışla sürüklenen iki küre: şerit üzerindeki güncel konumları
     line.beads[0] = Math.floor(((time * 0.0001 + line.phase) % 1) * visible);
     line.beads[1] = Math.floor(((time * 0.0001 + line.phase + 0.5) % 1) * visible);
-
-    for (let c = 0; c < FLOW_CHUNKS; c++) {
-      const start = c * chunkLength;
-      const end = Math.min(start + chunkLength, visible);
-      if (end <= start) break;
-      const mid = Math.floor((start + end) / 2) * 3;
-      const radius = line.points[mid];
-      chunks.push({
-        line,
-        start,
-        end,
-        radius,
-        depth: radius * Math.sin(line.points[mid + 1] + spin),
-        along: (c + 0.5) / FLOW_CHUNKS,
-      });
-    }
   }
-  chunks.sort((a, b) => a.depth - b.depth);
 
-  for (const chunk of chunks) {
+  // Görünen parçaları arkadan öne doğru sırala ki derinlik doğru görünsün. Parça nesneleri bir kez kurulur
+  // (flowChunks); her karede yalnızca derinlik ve görünen uç güncellenir, yeni nesne üretilmez.
+  visibleChunks.length = 0;
+  for (const chunk of flowChunks) {
+    if (chunk.start >= visible) continue;
+    chunk.end = Math.min(chunk.start + FLOW_CHUNK_LENGTH, visible);
+    const mid = Math.floor((chunk.start + chunk.end) / 2) * 3;
+    chunk.radius = chunk.line.points[mid];
+    chunk.depth = chunk.radius * Math.sin(chunk.line.points[mid + 1] + spin);
+    visibleChunks.push(chunk);
+  }
+  visibleChunks.sort((a, b) => a.depth - b.depth);
+
+  for (const chunk of visibleChunks) {
     const { points, beads } = chunk.line;
     let beadX = 0;
     let beadY = 0;
@@ -319,16 +277,15 @@ function drawFlow(time) {
     }
 
     // Uçlara doğru incelen şerit; arkadaki parçalar daha koyu
-    const width = unit * (0.7 + 4.6 * chunk.line.width * Math.sin(Math.PI * chunk.along) ** 0.8);
+    const width = unit * chunk.widthFactor;
     const shade = 0.5 + 0.5 * clamp((chunk.depth + 0.5) / 1.0, 0, 1);
-    const [red, green, blue] = flowColor(chunk.radius);
 
     // Önce koyu bir kenar: üst üste binen şeritler birbirinden ayrışsın
     flowCtx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
     flowCtx.lineWidth = width + unit * 2;
     flowCtx.stroke();
 
-    flowCtx.strokeStyle = `rgb(${Math.round(red * shade)}, ${Math.round(green * shade)}, ${Math.round(blue * shade)})`;
+    flowCtx.strokeStyle = chunkColor(chunk, shade);
     flowCtx.lineWidth = width;
     flowCtx.stroke();
 
@@ -364,64 +321,36 @@ if (reducedMotion) {
 
 const pinned = [...document.querySelectorAll('[data-pin]')];
 const entering = [...document.querySelectorAll('[data-enter]')];
-let scrollQueued = false;
 
 function updateScroll() {
-  scrollQueued = false;
   const vh = window.innerHeight;
   const scrollable = document.documentElement.scrollHeight - vh;
-  document.documentElement.style.setProperty('--scroll', scrollable > 0 ? window.scrollY / scrollable : 0);
+  // Önce bütün ölçümler, sonra bütün yazmalar: arada yazılan bir stil sonraki ölçümü yeniden hesaplatmasın
+  const pinnedRects = pinned.map((el) => el.getBoundingClientRect());
+  const enteringTops = entering.map((el) => el.getBoundingClientRect().top);
+
+  updateProgress(scrollable);
 
   // Sabitlenen bölümler: bölüm boyunca kaydırma ilerlemesi (0 → 1)
-  for (const el of pinned) {
-    const rect = el.getBoundingClientRect();
-    if (rect.bottom < -vh || rect.top > vh * 2) continue;
+  pinned.forEach((el, i) => {
+    const rect = pinnedRects[i];
+    if (rect.bottom < -vh || rect.top > vh * 2) return;
     // Çok kısa ekranda bölümler sabitlenmez: giriş başlangıç, diğerleri bitiş hâlinde dursun
     if (rect.height <= vh * 1.2) {
       el.style.setProperty('--p', el.classList.contains('hero') ? 0 : 1);
-      continue;
+      return;
     }
     const progress = clamp(-rect.top / (rect.height - vh), 0, 1);
     el.style.setProperty('--p', progress.toFixed(4));
     if (el === flowSection) updateParabola(progress);
-  }
+  });
 
   // Ekrana giren öğeler: alttan girip ekranın ortasına gelene kadar (0 → 1)
-  for (const el of entering) {
-    const rect = el.getBoundingClientRect();
-    if (rect.top > vh * 1.5) continue;
-    el.style.setProperty('--e', clamp((vh - rect.top) / (vh * 0.6), 0, 1).toFixed(4));
-  }
-}
-
-function queueScroll() {
-  if (!scrollQueued) {
-    scrollQueued = true;
-    requestAnimationFrame(updateScroll);
-  }
-}
-
-if (!reducedMotion) {
-  window.addEventListener('scroll', queueScroll, { passive: true });
-  window.addEventListener('resize', queueScroll);
-  updateScroll();
-}
-
-// ---------- Mobil menü ----------
-const navToggle = document.querySelector('.nav-toggle');
-const navLinks = document.querySelector('.nav-links');
-
-navToggle.addEventListener('click', () => {
-  const open = navLinks.classList.toggle('open');
-  navToggle.setAttribute('aria-expanded', open);
-});
-
-navLinks.querySelectorAll('a').forEach((link) => {
-  link.addEventListener('click', () => {
-    navLinks.classList.remove('open');
-    navToggle.setAttribute('aria-expanded', false);
+  entering.forEach((el, i) => {
+    const top = enteringTops[i];
+    if (top > vh * 1.5) return;
+    el.style.setProperty('--e', clamp((vh - top) / (vh * 0.6), 0, 1).toFixed(4));
   });
-});
+}
 
-// Alt bilgideki yıl
-document.getElementById('year').textContent = new Date().getFullYear();
+if (!reducedMotion) onScrollFrame(updateScroll);

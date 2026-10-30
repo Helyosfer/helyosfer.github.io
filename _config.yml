@@ -1,0 +1,5 @@
+# GitHub Pages (Jekyll) ayarı: iletişim Worker'ının kaynak kodu sitede dosya olarak yayınlanmasın.
+# Worker GitHub Pages'te değil, Cloudflare'de çalışır (iletisim-worker/README.md).
+exclude:
+  - iletisim-worker
+  - denetim

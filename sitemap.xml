@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Yeni bir sayfa eklenince buraya da <url> olarak ekle -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://helyosfer.me/</loc>
+  </url>
+  <url>
+    <loc>https://helyosfer.me/hizmetler/</loc>
+  </url>
+</urlset>

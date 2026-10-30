@@ -1,0 +1,159 @@
+openapi: 3.0.3
+info:
+  title: İletişim Worker'ı
+  version: "1.0"
+  description: >
+    Hizmetler sayfasındaki sohbet penceresinin ve yönetim panelinin API'si (src/index.js).
+    ZAP taraması ve API testleri bu tanımı kullanır. Ziyaretçi uçları yalnızca IZINLI_KOKENLER'deki
+    bir Origin başlığıyla çalışır; panel uçları Cloudflare Access arkasındadır.
+servers:
+  - url: http://127.0.0.1:8787
+    description: Yerel (wrangler dev)
+  - url: https://iletisim.helyosfer.me
+    description: Canlı
+
+components:
+  securitySchemes:
+    sohbetBelirteci:
+      type: http
+      scheme: bearer
+      bearerFormat: "<sohbet uuid>.<43 karakter base64url>"
+  schemas:
+    Hata:
+      type: object
+      required: [hata]
+      properties:
+        hata:
+          type: string
+          enum: [gecersiz, bos, cok_uzun, cok_hizli, yogun, sohbet_yok, sohbet_dolu, koken, yok, yontem, yetki, sunucu]
+    Mesaj:
+      type: object
+      required: [id, gonderen, metin, zaman]
+      properties:
+        id: { type: integer }
+        gonderen: { type: string, enum: [ziyaretci, asistan, ben] }
+        metin: { type: string, maxLength: 2000 }
+        zaman: { type: integer, description: Unix zamanı (ms) }
+    MesajGonder:
+      type: object
+      required: [metin]
+      properties:
+        metin: { type: string, minLength: 1, maxLength: 2000 }
+        ad: { type: string, maxLength: 80, nullable: true }
+        iletisim: { type: string, maxLength: 120, nullable: true }
+        dil: { type: string, enum: [tr, en] }
+        web: { type: string, description: Tuzak alanı; dolu gelirse istek reddedilir }
+    MesajYaniti:
+      type: object
+      required: [sohbet, asistan, mesajlar]
+      properties:
+        sohbet: { type: string, format: uuid }
+        asistan: { type: boolean }
+        belirtec: { type: string, description: Yalnızca yeni sohbette (201) döner }
+        mesajlar: { type: array, items: { $ref: "#/components/schemas/Mesaj" } }
+    SohbetDurumu:
+      type: object
+      required: [durum, asistan, mesajlar]
+      properties:
+        durum: { type: string, enum: [acik, kapali] }
+        asistan: { type: boolean }
+        mesajlar: { type: array, items: { $ref: "#/components/schemas/Mesaj" } }
+  parameters:
+    Koken:
+      name: Origin
+      in: header
+      required: true
+      schema: { type: string, example: "https://helyosfer.me" }
+    SohbetId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+paths:
+  /v1/mesaj:
+    post:
+      summary: Mesaj gönder (ilk mesajda sohbet açılır)
+      parameters: [{ $ref: "#/components/parameters/Koken" }]
+      security: [{}, { sohbetBelirteci: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MesajGonder" }
+            example: { metin: "Merhaba, Minecraft sunucusu kurulabilir mi?", ad: "Deneme", dil: "tr" }
+      responses:
+        "200": { description: Mevcut sohbete eklendi, content: { application/json: { schema: { $ref: "#/components/schemas/MesajYaniti" } } } }
+        "201": { description: Yeni sohbet açıldı, content: { application/json: { schema: { $ref: "#/components/schemas/MesajYaniti" } } } }
+        "400": { description: Geçersiz girdi, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+        "403": { description: Köken izinli değil, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+        "404": { description: Belirteç geçersiz, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+        "429": { description: Hız sınırı ya da sohbet dolu, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+        "503":
+          description: Son 24 saatteki yeni sohbet sınırı doldu (hata = yogun); yalnızca yeni sohbet açarken
+          headers: { Retry-After: { schema: { type: integer, example: 3600 } } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } }
+    get:
+      summary: Sohbetin mesajlarını oku
+      parameters:
+        - { $ref: "#/components/parameters/Koken" }
+        - { name: sonra, in: query, required: false, schema: { type: integer, minimum: 0 } }
+      security: [{ sohbetBelirteci: [] }]
+      responses:
+        "200": { description: Mesajlar, content: { application/json: { schema: { $ref: "#/components/schemas/SohbetDurumu" } } } }
+        "403": { description: Köken izinli değil, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+        "404": { description: Belirteç yok ya da geçersiz, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+        "429": { description: Hız sınırı, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+    options:
+      summary: CORS ön kontrolü
+      parameters: [{ $ref: "#/components/parameters/Koken" }]
+      responses:
+        "204": { description: İzinli köken }
+        "403": { description: İzinsiz köken }
+  /v1/devret:
+    post:
+      summary: Bir insanla konuşmak iste (asistan susar)
+      parameters: [{ $ref: "#/components/parameters/Koken" }]
+      security: [{ sohbetBelirteci: [] }]
+      responses:
+        "200": { description: Devredildi, content: { application/json: { schema: { $ref: "#/components/schemas/SohbetDurumu" } } } }
+        "403": { description: Köken izinli değil, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+        "404": { description: Belirteç geçersiz, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+        "429": { description: Hız sınırı, content: { application/json: { schema: { $ref: "#/components/schemas/Hata" } } } }
+
+  /admin/api/sohbetler:
+    get:
+      summary: "Panel: sohbet listesi (Access gerekir)"
+      parameters:
+        - { name: durum, in: query, required: false, schema: { type: string, enum: [acik, kapali, hepsi] } }
+        - { name: adet, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 1000 } }
+      responses:
+        "200": { description: Liste }
+        "403": { description: Access belirteci yok ya da geçersiz }
+  /admin/api/sohbetler/{id}:
+    parameters: [{ $ref: "#/components/parameters/SohbetId" }]
+    get:
+      summary: "Panel: sohbet ve mesajları"
+      responses: { "200": { description: Sohbet }, "404": { description: Yok } }
+    delete:
+      summary: "Panel: sohbeti sil (x-panel: 1 gerekir)"
+      parameters: [{ name: x-panel, in: header, required: true, schema: { type: string, enum: ["1"] } }]
+      responses: { "200": { description: Silindi }, "403": { description: x-panel yok ya da köken yabancı }, "404": { description: Yok } }
+  /admin/api/sohbetler/{id}/yanit:
+    parameters: [{ $ref: "#/components/parameters/SohbetId" }]
+    post:
+      summary: "Panel: cevap yaz"
+      parameters: [{ name: x-panel, in: header, required: true, schema: { type: string, enum: ["1"] } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [metin], properties: { metin: { type: string, maxLength: 2000 } } } } }
+      responses: { "200": { description: Eklendi }, "400": { description: Geçersiz }, "403": { description: Yetki yok }, "404": { description: Yok } }
+  /admin/api/sohbetler/{id}/durum:
+    parameters: [{ $ref: "#/components/parameters/SohbetId" }]
+    post:
+      summary: "Panel: sohbeti kapat ya da aç"
+      parameters: [{ name: x-panel, in: header, required: true, schema: { type: string, enum: ["1"] } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [durum], properties: { durum: { type: string, enum: [acik, kapali] } } } } }
+      responses: { "200": { description: Güncellendi }, "400": { description: Geçersiz }, "403": { description: Yetki yok }, "404": { description: Yok } }

@@ -1,0 +1,36 @@
+id: iletisim-sahte-jwt-kabul
+
+info:
+  name: Panel imzasız ya da sahte Access belirtecini kabul ediyor
+  author: helyosfer
+  severity: critical
+  description: >
+    Cf-Access-Jwt-Assertion başlığına imzası geçersiz (alg=none ve yanlış imzalı RS256) belirteç konunca
+    panel API'si veri döndürüyor. Worker, Access'in önünden dolanılsa bile imzayı kendisi doğrulamalı.
+  tags: iletisim,auth,jwt,canli
+
+variables:
+  # {"alg":"none","typ":"JWT"} . {"aud":"x","email":"saldirgan@kotu.example","exp":4102444800}
+  jwt_none: "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJhdWQiOiJ4IiwiZW1haWwiOiJzYWxkaXJnYW5Aa290dS5leGFtcGxlIiwiZXhwIjo0MTAyNDQ0ODAwfQ."
+  # {"alg":"RS256","kid":"yok"} . aynı yük . rastgele imza
+  jwt_rs: "eyJhbGciOiJSUzI1NiIsImtpZCI6InlvayJ9.eyJhdWQiOiJ4IiwiZW1haWwiOiJzYWxkaXJnYW5Aa290dS5leGFtcGxlIiwiZXhwIjo0MTAyNDQ0ODAwfQ.c2FodGVpbXphc2FodGVpbXph"
+
+http:
+  - raw:
+      - |
+        GET /admin/api/sohbetler HTTP/1.1
+        Host: {{Hostname}}
+        Cf-Access-Jwt-Assertion: {{jwt_none}}
+        Cookie: CF_Authorization={{jwt_none}}
+
+      - |
+        GET /admin/api/sohbetler HTTP/1.1
+        Host: {{Hostname}}
+        Cf-Access-Jwt-Assertion: {{jwt_rs}}
+        Cookie: CF_Authorization={{jwt_rs}}
+    redirects: false
+    stop-at-first-match: true
+    matchers:
+      - type: dsl
+        dsl:
+          - status_code == 200 && contains(body, '"sohbetler"')
