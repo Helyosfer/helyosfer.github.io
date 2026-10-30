@@ -319,6 +319,213 @@ if (reducedMotion) {
   }).observe(flowSection);
 }
 
+// ---------- Helyosfer sahnesi ----------
+// Yüzlerce tel kaydırdıkça üç biçim arasında geçer: yandan akan demet (Güneş rüzgârı), ortası parlayan
+// ışınsal küre (heliosfer) ve sitenin simgesindeki H. Her telin üç biçimdeki noktaları bir kez hesaplanır;
+// her karede bölümün ilerlemesine (--p) göre aralarında karıştırılır. Kökler sönük, uçlar parlak.
+// DÜZENLE: tel sayısı (telefonda daha az), tel başına nokta sayısı ve geçiş aralıkları.
+// Geçiş aralıkları style.css'teki yazıların dilimleriyle (0.30 ve 0.64) uyumlu olmalı.
+const HELIO_STRANDS = 640;
+const HELIO_STRANDS_PHONE = 300;
+const HELIO_POINTS = 22;
+const HELIO_TO_SPHERE = [0.2, 0.42];
+const HELIO_TO_H = [0.56, 0.78];
+const HELIO_LEVELS = 8; // derinliğe göre parlaklık basamakları: her basamak tek seferde çizilir
+
+const helioCanvas = document.querySelector('.helio-canvas');
+const helioCtx = helioCanvas.getContext('2d');
+const helioSection = helioCanvas.closest('[data-pin]');
+const helioScreen = new Float32Array(HELIO_POINTS * 2);
+let helioStrands = [];
+let helioPinned = false;
+
+const smooth = (t) => t * t * (3 - 2 * t);
+
+// Demetin omurgası: sağ üstten girip sola doğru inen bir eğri (kübik Bézier)
+const BUNDLE_SPINE = [[1.9, -1.15], [0.8, -0.8], [0.25, -0.05], [-0.3, 0.45]];
+function bundleSpine(s) {
+  const k = [(1 - s) ** 3, 3 * (1 - s) ** 2 * s, 3 * (1 - s) * s * s, s ** 3];
+  return [0, 1].map((axis) => k.reduce((sum, weight, i) => sum + weight * BUNDLE_SPINE[i][axis], 0));
+}
+
+function buildHelio(count) {
+  helioStrands = [];
+  for (let n = 0; n < count; n++) {
+    const bundle = new Float32Array(HELIO_POINTS * 3);
+    const sphere = new Float32Array(HELIO_POINTS * 3);
+    const letter = new Float32Array(HELIO_POINTS * 3);
+
+    // Demet: tel, kesitte bir dairenin içinde durur; uca doğru açılır ve demetin ekseni etrafında burulur
+    const ringRadius = Math.sqrt(Math.random());
+    const ringAngle = Math.random() * Math.PI * 2;
+    const reach = 0.82 + Math.random() * 0.18;
+
+    // Küre: yönler Fibonacci dağılımıyla küreye eşit yayılır; her diken bir yana hafifçe kıvrılır
+    const y = 1 - (2 * (n + 0.5)) / count;
+    const ring = Math.sqrt(1 - y * y);
+    const dir = [Math.cos(n * 2.399963) * ring, y, Math.sin(n * 2.399963) * ring];
+    const side = ring > 0.01 ? [-dir[2] / ring, 0, dir[0] / ring] : [1, 0, 0];
+    const spike = 0.36 + Math.random() * 0.16;
+
+    // H: tellerin %42'si sol sütunda, %42'si sağ sütunda (kökler altta), %16'sı ortadaki çizgide
+    const pick = Math.random();
+    const depth = (Math.random() - 0.5) * 0.08;
+    let from;
+    let to;
+    if (pick < 0.84) {
+      const x = (pick < 0.42 ? -0.42 : 0.22) + Math.random() * 0.2;
+      from = [x, 0.5 - Math.random() * 0.03];
+      to = [x, -0.5 + Math.random() * 0.03];
+    } else {
+      const bar = -0.07 + Math.random() * 0.14;
+      from = [-0.24 + Math.random() * 0.02, bar];
+      to = [0.24 - Math.random() * 0.02, bar];
+    }
+
+    for (let i = 0; i < HELIO_POINTS; i++) {
+      const s = i / (HELIO_POINTS - 1);
+      const o = i * 3;
+
+      const t = s * reach;
+      const [bx, by] = bundleSpine(t);
+      const spread = 0.04 + 0.5 * t ** 2.4;
+      const twist = ringAngle + t * 2.6;
+      const across = Math.cos(twist) * ringRadius * spread;
+      bundle[o] = bx + 0.58 * across;
+      bundle[o + 1] = by + 0.81 * across;
+      bundle[o + 2] = Math.sin(twist) * ringRadius * spread;
+
+      const radius = 0.13 + spike * s;
+      const curl = 0.1 * s * s;
+      for (let a = 0; a < 3; a++) sphere[o + a] = dir[a] * radius + side[a] * curl;
+
+      letter[o] = from[0] + (to[0] - from[0]) * s;
+      letter[o + 1] = from[1] + (to[1] - from[1]) * s;
+      letter[o + 2] = depth;
+    }
+    helioStrands.push({ bundle, sphere, letter, delay: Math.random() * 0.3, phase: Math.random() * Math.PI * 2 });
+  }
+}
+
+function resizeHelio() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  helioCanvas.width = Math.round(helioCanvas.clientWidth * dpr);
+  helioCanvas.height = Math.round(helioCanvas.clientHeight * dpr);
+  // Sabitlenmeyen hâlde (hareket azaltma, kısa ekran) küre gösterilir
+  helioPinned = helioSection.offsetHeight > window.innerHeight * 1.2;
+  const count = helioCanvas.clientWidth < 560 ? HELIO_STRANDS_PHONE : HELIO_STRANDS;
+  if (count !== helioStrands.length) buildHelio(count);
+}
+
+function drawHelio(time) {
+  const w = helioCanvas.width;
+  const h = helioCanvas.height;
+  if (!w || !h) return;
+
+  const scrollProgress = parseFloat(helioSection.style.getPropertyValue('--p'));
+  const p = helioPinned && !Number.isNaN(scrollProgress) ? scrollProgress : 0.5;
+  const toSphere = clamp((p - HELIO_TO_SPHERE[0]) / (HELIO_TO_SPHERE[1] - HELIO_TO_SPHERE[0]), 0, 1);
+  const toLetter = clamp((p - HELIO_TO_H[0]) / (HELIO_TO_H[1] - HELIO_TO_H[0]), 0, 1);
+
+  // Küre kaydırdıkça döner ve hafifçe öne eğilir; demet ve H düz durur
+  const sphereWeight = smooth(toSphere) * (1 - smooth(toLetter));
+  const turn = sphereWeight * (p * 5 + Math.sin(time * 0.0004) * 0.3);
+  const tilt = sphereWeight * 0.35;
+  const cosY = Math.cos(turn);
+  const sinY = Math.sin(turn);
+  const cosX = Math.cos(tilt);
+  const sinX = Math.sin(tilt);
+
+  // Telefonda sahne dar; şekil alanı biraz daha doldursun
+  const unit = Math.min(w, h) * (helioCanvas.clientWidth < 560 ? 0.46 : 0.4);
+  const cx = w / 2;
+  const cy = h / 2;
+  const wave = time * 0.0012;
+
+  helioCtx.clearRect(0, 0, w, h);
+  helioCtx.globalCompositeOperation = 'lighter';
+
+  // Kürenin ortasındaki sıcak ışık
+  if (sphereWeight > 0.01) {
+    const glow = helioCtx.createRadialGradient(cx, cy, 0, cx, cy, unit * 0.6);
+    glow.addColorStop(0, `rgba(255, 226, 180, ${0.55 * sphereWeight})`);
+    glow.addColorStop(0.35, `rgba(255, 170, 90, ${0.18 * sphereWeight})`);
+    glow.addColorStop(1, 'rgba(255, 170, 90, 0)');
+    helioCtx.fillStyle = glow;
+    helioCtx.fillRect(cx - unit, cy - unit, unit * 2, unit * 2);
+  }
+
+  const paths = Array.from({ length: HELIO_LEVELS }, () => new Path2D());
+  const tips = new Path2D();
+  const tipSize = Math.max(1, w / 900);
+
+  for (const strand of helioStrands) {
+    // Teller aynı anda değil, biraz dağınık sırayla biçim değiştirir
+    const a = smooth(clamp(toSphere * 1.3 - strand.delay, 0, 1));
+    const b = smooth(clamp(toLetter * 1.3 - strand.delay, 0, 1));
+    let depthSum = 0;
+
+    for (let i = 0; i < HELIO_POINTS; i++) {
+      const o = i * 3;
+      let x = strand.bundle[o] + (strand.sphere[o] - strand.bundle[o]) * a;
+      let y = strand.bundle[o + 1] + (strand.sphere[o + 1] - strand.bundle[o + 1]) * a;
+      let z = strand.bundle[o + 2] + (strand.sphere[o + 2] - strand.bundle[o + 2]) * a;
+      x += (strand.letter[o] - x) * b;
+      y += (strand.letter[o + 1] - y) * b;
+      z += (strand.letter[o + 2] - z) * b;
+      // Demet rüzgârda hafifçe dalgalanır
+      y += (1 - a) * 0.025 * Math.sin(wave + i * 0.35 + strand.phase);
+
+      // Döndür, sonra perspektifle ekrana yansıt
+      const x1 = x * cosY - z * sinY;
+      const z1 = x * sinY + z * cosY;
+      const y1 = y * cosX - z1 * sinX;
+      const z2 = y * sinX + z1 * cosX;
+      const scale = 2.8 / (2.8 - z2);
+      helioScreen[i * 2] = cx + x1 * scale * unit;
+      helioScreen[i * 2 + 1] = cy + y1 * scale * unit;
+      depthSum += z2;
+    }
+
+    const level = clamp(Math.floor((depthSum / HELIO_POINTS + 0.6) / 1.2 * HELIO_LEVELS), 0, HELIO_LEVELS - 1);
+    const path = paths[level];
+    path.moveTo(helioScreen[0], helioScreen[1]);
+    for (let i = 1; i < HELIO_POINTS; i++) path.lineTo(helioScreen[i * 2], helioScreen[i * 2 + 1]);
+    const last = (HELIO_POINTS - 1) * 2;
+    tips.rect(helioScreen[last] - tipSize, helioScreen[last + 1] - tipSize, tipSize * 2, tipSize * 2);
+  }
+
+  helioCtx.lineWidth = Math.max(1, w / 1400);
+  for (let level = 0; level < HELIO_LEVELS; level++) {
+    helioCtx.strokeStyle = `rgba(214, 220, 232, ${0.08 + (0.22 * level) / (HELIO_LEVELS - 1)})`;
+    helioCtx.stroke(paths[level]);
+  }
+  helioCtx.fillStyle = 'rgba(255, 196, 120, 0.85)';
+  helioCtx.fill(tips);
+  helioCtx.globalCompositeOperation = 'source-over';
+}
+
+// Yalnızca bölüm ekrandayken canlandır
+let helioRunning = false;
+function helioLoop(time) {
+  if (!helioRunning) return;
+  drawHelio(time);
+  requestAnimationFrame(helioLoop);
+}
+
+resizeHelio();
+new ResizeObserver(() => { resizeHelio(); drawHelio(performance.now()); }).observe(helioCanvas);
+
+if (reducedMotion) {
+  drawHelio(0);
+} else {
+  new IntersectionObserver(([entry]) => {
+    const wasRunning = helioRunning;
+    helioRunning = entry.isIntersecting;
+    if (helioRunning && !wasRunning) requestAnimationFrame(helioLoop);
+  }).observe(helioSection);
+}
+
 const pinned = [...document.querySelectorAll('[data-pin]')];
 const entering = [...document.querySelectorAll('[data-enter]')];
 

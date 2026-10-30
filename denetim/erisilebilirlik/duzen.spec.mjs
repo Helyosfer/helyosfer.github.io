@@ -3,7 +3,7 @@
 import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 
-const SAYFALAR = [['ana sayfa', '/'], ['hizmetler', '/hizmetler/']];
+const SAYFALAR = [['ana sayfa', '/']];
 // 320: WCAG 1.4.10 yeniden akış sınırı · 375: telefon · 768: dikey tablet · 1024: yatay tablet/küçük dizüstü · 1440: masaüstü
 const KIRILIMLAR = [[320, 640], [375, 812], [768, 1024], [1024, 768], [1440, 900]];
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -46,10 +46,10 @@ for (const [ad, yol] of SAYFALAR) {
 
 test.describe('ERS-03 kısa telefon ekranında sabitlenen sahneler kesilmez', () => {
   // Gerçek telefonlarda adres çubuğu yüzünden görünen alan ekrandan kısadır (ör. 360×640 cihazda ~360×580)
-  for (const [w, h] of [[320, 568], [360, 580], [375, 635], [390, 664]]) {
-    test(`${w}x${h}`, async ({ page }) => {
+  for (const [ad, yol] of SAYFALAR) for (const [w, h] of [[320, 568], [360, 580], [375, 635], [390, 664]]) {
+    test(`${ad} ${w}x${h}`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: h });
-      await page.goto('/');
+      await page.goto(yol);
       const kesilen = await page.evaluate(async () => {
         const out = [];
         for (const pin of document.querySelectorAll('[data-pin]')) {
@@ -90,7 +90,7 @@ test.describe('ERS-04 yazı boyutu %200 olunca sayfa yana taşmaz', () => {
 });
 
 test.describe('ERS-05 Tab ile odaklanan öğe tam görünür', () => {
-  for (const [ad, yol, w, h] of [['ana sayfa', '/', 1440, 900], ['ana sayfa', '/', 375, 812], ['hizmetler', '/hizmetler/', 375, 812]]) {
+  for (const [ad, yol, w, h] of [['ana sayfa', '/', 1440, 900], ['ana sayfa', '/', 375, 812]]) {
     test(`${ad} @${w}`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: h });
       await page.goto(yol);
@@ -121,40 +121,13 @@ test.describe('ERS-05 Tab ile odaklanan öğe tam görünür', () => {
   }
 });
 
-test('ERS-06 sohbet kutularının görünür ipucu dışında bir adı var', async ({ page }) => {
-  await page.goto('/hizmetler/');
-  await page.click('.chat-launcher');
-  for (const ad of ['ad', 'iletisim', 'metin']) {
-    const etiketli = await page.locator(`#chat [name="${ad}"]`).evaluate((e) => e.labels.length > 0 || Boolean(e.getAttribute('aria-label')));
-    expect(etiketli, ad).toBe(true);
-  }
-});
-
-test('ERS-07 telefonda tam ekran sohbet açıkken odak pencerenin dışına çıkmaz', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('/hizmetler/');
-  await page.click('.chat-launcher');
-  for (let i = 0; i < 12; i++) {
-    await page.keyboard.press('Tab');
-    // Son öğeden sonra odak tarayıcının kendi arayüzüne çıkabilir (body), ama sayfanın başka bir öğesine gitmemeli
-    const yer = await page.evaluate(() => (document.activeElement === document.body ? 'tarayici' : document.activeElement.closest('#chat') ? 'pencere' : document.activeElement.className));
-    expect(['pencere', 'tarayici'], `Tab ${i + 1}: ${yer}`).toContain(yer);
-  }
-  await page.keyboard.press('Escape');
-  await expect(page.locator('#chat')).toBeHidden();
-  await expect(page.locator('.chat-launcher')).toBeFocused();
-});
-
 test('ERS-08 İngilizcede ekran okuyucu adları da İngilizce', async ({ page }) => {
-  for (const yol of ['/', '/hizmetler/']) {
-    await page.goto(yol);
-    await page.click('.lang-toggle');
-    const cevrilmemis = await page.evaluate(() => [...document.querySelectorAll('[aria-label]')]
-      .filter((e) => !e.classList.contains('lang-toggle') && !e.hasAttribute('data-en-label'))
-      .map((e) => `${e.className}: ${e.getAttribute('aria-label')}`));
-    expect(cevrilmemis, yol).toEqual([]);
-    await page.click('.lang-toggle'); // Türkçeye geri dön (seçim localStorage'da kalır)
-  }
+  await page.goto('/');
+  await page.click('.lang-toggle');
+  const cevrilmemis = await page.evaluate(() => [...document.querySelectorAll('[aria-label]')]
+    .filter((e) => !e.classList.contains('lang-toggle') && !e.hasAttribute('data-en-label'))
+    .map((e) => `${e.className}: ${e.getAttribute('aria-label')}`));
+  expect(cevrilmemis).toEqual([]);
 });
 
 test('ERS-09 Türkçe sayfadaki İngilizce yetenek adları lang="en" ile işaretli', async ({ page }) => {
@@ -170,19 +143,4 @@ test('ERS-10 hareket azaltılınca yanıp sönen imleçler durur', async ({ brow
     expect(await page.locator(sec).first().evaluate((e) => getComputedStyle(e, '::after').animationName), sec).toBe('none');
   }
   await ctx.close();
-});
-
-test('ERS-11 sohbetteki önemli küçük yazılar en az 12 piksel', async ({ page }) => {
-  await page.goto('/hizmetler/');
-  await page.click('.chat-launcher');
-  const boyut = await page.locator('.chat-note').evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
-  expect(boyut).toBeGreaterThanOrEqual(12);
-});
-
-test('ERS-12 sohbet geçmişi her yoklamada baştan okunmaz', async ({ page }) => {
-  // Bütün geçmişi yeniden çizen bir alan aria-live olursa ekran okuyucu her seferinde hepsini okur.
-  // Yeni mesajları ayrı, görünmez bir duyuru alanı okumalı.
-  await page.goto('/hizmetler/');
-  expect(await page.locator('.chat-log').getAttribute('aria-live')).toBeNull();
-  await expect(page.locator('#chat [data-chat-announce]')).toHaveAttribute('aria-live', 'polite');
 });

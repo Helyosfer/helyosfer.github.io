@@ -2,7 +2,7 @@
   "ci": {
     "collect": {
       "staticDistDir": "../..",
-      "url": ["http://localhost/", "http://localhost/hizmetler/"],
+      "url": ["http://localhost/"],
       "numberOfRuns": 3,
       "settings": { "chromeFlags": "--headless=new --no-sandbox" }
     },

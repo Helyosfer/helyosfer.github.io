@@ -4,7 +4,7 @@
     "runners": ["htmlcs", "axe"],
     "timeout": 60000,
     "wait": 1500,
-    "hideElements": ".formulas, .snow",
+    "hideElements": ".formulas",
     "ignore": ["color-contrast"],
     "chromeLaunchConfig": { "args": ["--no-sandbox"] }
   },
@@ -13,16 +13,6 @@
     { "url": "http://127.0.0.1:5510/", "viewport": { "width": 375, "height": 812 } },
     { "url": "http://127.0.0.1:5510/", "viewport": { "width": 768, "height": 1024 } },
     { "url": "http://127.0.0.1:5510/", "viewport": { "width": 1024, "height": 768 } },
-    { "url": "http://127.0.0.1:5510/", "viewport": { "width": 1440, "height": 900 } },
-    { "url": "http://127.0.0.1:5510/hizmetler/", "viewport": { "width": 320, "height": 640 } },
-    { "url": "http://127.0.0.1:5510/hizmetler/", "viewport": { "width": 375, "height": 812 } },
-    { "url": "http://127.0.0.1:5510/hizmetler/", "viewport": { "width": 768, "height": 1024 } },
-    { "url": "http://127.0.0.1:5510/hizmetler/", "viewport": { "width": 1024, "height": 768 } },
-    { "url": "http://127.0.0.1:5510/hizmetler/", "viewport": { "width": 1440, "height": 900 } },
-    {
-      "url": "http://127.0.0.1:5510/hizmetler/#sohbet-acik",
-      "viewport": { "width": 375, "height": 812 },
-      "actions": ["click element .chat-launcher", "wait for element #chat to be visible"]
-    }
+    { "url": "http://127.0.0.1:5510/", "viewport": { "width": 1440, "height": 900 } }
   ]
 }

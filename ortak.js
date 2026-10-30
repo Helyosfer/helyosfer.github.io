@@ -1,6 +1,6 @@
-// Ana sayfa ve hizmetler sayfasının ortak kodu. Her iki sayfa da bunu kendi betiğinden ÖNCE yükler (ikisi de defer):
-//   <script defer src="ortak.js"></script>  (hizmetler sayfasında "../ortak.js")
-// Buradaki üst düzey adlar (reducedMotion, clamp, navLinks…) sayfa betiklerinde de görünür; orada yeniden tanımlama.
+// Sayfanın temel kodu (çerçeve koruması, metin bölme, dil, kaydırma, menü). script.js'ten ÖNCE yüklenir (ikisi de defer):
+//   <script defer src="ortak.js"></script>
+// Buradaki üst düzey adlar (reducedMotion, clamp, navLinks…) script.js'te de görünür; orada yeniden tanımlama.
 
 // Başka bir site sayfayı çerçeve (iframe) içine gömerse sayfa gizlenir ve kendi sekmesinde açılmaya çalışılır.
 // GitHub Pages "frame-ancestors" başlığı gönderemediği için tıklama tuzağına (clickjacking) karşı bu kullanılır.
@@ -53,14 +53,12 @@ function splitChars(el, text) {
 }
 
 // ---------- Dil (TR / EN) ----------
-// Türkçe metin HTML'de, İngilizcesi data-en özelliğinde durur. Kutu ipuçları data-en-placeholder'da,
-// düğme adları (aria-label) data-en-label'da. Seçim iki sayfada ortak saklanır.
+// Türkçe metin HTML'de, İngilizcesi data-en özelliğinde durur. Düğme adları (aria-label) data-en-label'da.
+// Seçim tarayıcıda saklanır.
 const langToggle = document.querySelector('.lang-toggle');
 const translatable = [...document.querySelectorAll('[data-en]')];
-const placeholders = [...document.querySelectorAll('[data-en-placeholder]')];
 const labels = [...document.querySelectorAll('[data-en-label]')];
 translatable.forEach((el) => { el.dataset.tr = el.textContent; });
-placeholders.forEach((el) => { el.dataset.trPlaceholder = el.placeholder; });
 labels.forEach((el) => { el.dataset.trLabel = el.getAttribute('aria-label'); });
 let pageTitles = null;
 
@@ -72,7 +70,6 @@ function setLanguage(lang) {
     else if (el.hasAttribute('data-chars')) splitChars(el, el.dataset[lang]);
     else el.textContent = el.dataset[lang];
   });
-  placeholders.forEach((el) => { el.placeholder = lang === 'en' ? el.dataset.enPlaceholder : el.dataset.trPlaceholder; });
   labels.forEach((el) => el.setAttribute('aria-label', lang === 'en' ? el.dataset.enLabel : el.dataset.trLabel));
   // Düğme, geçilecek diğer dili gösterir
   langToggle.textContent = lang === 'tr' ? 'EN' : 'TR';

@@ -1,5 +1,5 @@
 # Erişilebilirlik ve duyarlılık denetimi: Playwright + axe (5 kırılım noktası), Pa11y, Lighthouse CI.
-# Siteyi CI içinde yerel bir sunucudan açar; canlı siteye ve iletişim Worker'ına dokunmaz.
+# Siteyi CI içinde yerel bir sunucudan açar; canlı siteye dokunmaz.
 name: Erişilebilirlik
 
 on:
@@ -10,7 +10,6 @@ on:
       - "style.css"
       - "script.js"
       - "ortak.js"
-      - "hizmetler/**"
       - "denetim/erisilebilirlik/**"
       - ".github/workflows/erisilebilirlik.yml"
 
