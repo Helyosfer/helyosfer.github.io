@@ -325,7 +325,8 @@ if (reducedMotion) {
 //  2) Helyosfer: kamera geri çekilir, Güneş bir noktaya iner, kuyruklu kabarcık açılır. İçeride parçacıklar
 //     Güneş'ten sonlanma şokuna (ince halkalar) koşar, oradan kabarcığın duvarı boyunca kuyruğa süpürülür.
 //     Duvar (helyopoz) yavaşça nefes alıp verir; dışarıda yıldızlararası rüzgâr kabarcığın çevresinden akar.
-//  3) Sitenin simgesindeki H.
+//  3) Sitenin simgesindeki H: içinden parçacık izleri akar (sütunlarda aşağıdan yukarı, orta çizgide soldan
+//     sağa). Kenarları parlak, üstü daha açık gümüş; arada bir üzerinden ışık geçer, harf hafifçe salınır.
 // Her tel bir parçacık izi. Her karede telin üç biçimdeki noktaları hesaplanır ve bölümün ilerlemesine (--p)
 // göre aralarında karıştırılır. Hareket azaltılınca zaman durur, helyosfer sabit görünür.
 // DÜZENLE: tel sayısı (telefonda daha az), renkler, ölçüler ve geçiş aralıkları.
@@ -355,6 +356,15 @@ const BUBBLE_TAIL = 1.5; // kuyruğun uzunluğu
 const BUBBLE_CAP = 0.3; // duvar profilinde yuvarlak baş kısmın payı
 const SHOCK_R = 0.27; // sonlanma şoku (iç halka)
 const BUBBLE_SHIFT = [-0.24, -0.12]; // kuyruğa yer açmak için Güneş biraz sola ve yukarı kayar
+// H: sitenin simgesiyle (favicon.svg) aynı oranlar, yüksekliği 1
+const H_COLUMN = [0.206, 0.47]; // sütunun iç ve dış kenarının ortaya uzaklığı
+const H_BAR = 0.118; // orta çizginin yarı kalınlığı
+// H'nin dış hattı (dolgu ve üzerinden geçen ışık için)
+const H_OUTLINE = [
+  [-H_COLUMN[1], -0.5], [-H_COLUMN[0], -0.5], [-H_COLUMN[0], -H_BAR], [H_COLUMN[0], -H_BAR],
+  [H_COLUMN[0], -0.5], [H_COLUMN[1], -0.5], [H_COLUMN[1], 0.5], [H_COLUMN[0], 0.5],
+  [H_COLUMN[0], H_BAR], [-H_COLUMN[0], H_BAR], [-H_COLUMN[0], 0.5], [-H_COLUMN[1], 0.5],
+];
 
 const helioCanvas = document.querySelector('.helio-canvas');
 const helioCtx = helioCanvas.getContext('2d');
@@ -444,35 +454,24 @@ function buildHelio(count) {
       ? BUBBLE_CAP * (fromNose / (Math.PI / 2))
       : BUBBLE_CAP + ((fromNose - Math.PI / 2) / (Math.PI / 2)) * 0.12;
 
-    // H: tellerin %42'si sol sütunda, %42'si sağ sütunda (kökler altta), %16'sı ortadaki çizgide
-    const letter = new Float32Array(HELIO_POINTS * 3);
+    // H: tellerin %40'ı sol, %40'ı sağ sütunda, %20'si orta çizgide. Üçte biri şeridin tam kenarında durur
+    // ve harfin hatlarını çizer; gerisi içini doldurur
     const hPick = Math.random();
-    const depth = (Math.random() - 0.5) * 0.08;
-    let from;
-    let to;
-    if (hPick < 0.84) {
-      const x = (hPick < 0.42 ? -0.42 : 0.22) + Math.random() * 0.2;
-      from = [x, 0.5 - Math.random() * 0.03];
-      to = [x, -0.5 + Math.random() * 0.03];
-    } else {
-      const bar = -0.07 + Math.random() * 0.14;
-      from = [-0.24 + Math.random() * 0.02, bar];
-      to = [0.24 - Math.random() * 0.02, bar];
-    }
-    for (let i = 0; i < HELIO_POINTS; i++) {
-      const s = i / (HELIO_POINTS - 1);
-      letter[i * 3] = from[0] + (to[0] - from[0]) * s;
-      letter[i * 3 + 1] = from[1] + (to[1] - from[1]) * s;
-      letter[i * 3 + 2] = depth;
-    }
+    const hEdge = Math.random() < 0.32;
 
     helioStrands.push({
+      hStroke: hPick < 0.4 ? 0 : hPick < 0.8 ? 1 : 2,
+      hEdge,
+      hAcross: hEdge ? (Math.random() < 0.5 ? -0.5 : 0.5) : Math.random() - 0.5,
+      hDepth: (Math.random() - 0.5) * 0.1,
+      hSpeed: 1 / (3600 + Math.random() * 3200),
+      hLength: hEdge ? 0.35 + Math.random() * 0.25 : 0.12 + Math.random() * 0.2,
+      hSpark: Math.random() < 0.16,
       role,
       dir,
       around,
       startU,
       shock: SHOCK_R * (1 + 0.35 * dir[0]), // şok, kuyruk tarafında daha uzakta
-      letter,
       delay: Math.random() * 0.3,
       phase: Math.random(),
       // 1. adım: Güneş'ten fırlama hızı ve iz uzunluğu
@@ -566,6 +565,39 @@ function bubbleStrandPoint(strand, s, time, size) {
   return Math.sin(Math.PI * flow);
 }
 
+// 3. adımda (H) bir telin s'inci noktası: kendi şeridinde akan bir iz. Görünürlüğü (0–1) döndürür.
+// letterPoint[3]: sütunların iç kenarındaki iz orta çizginin üstüne geçtiyse 1 (orada çizgi kesilir)
+const letterPoint = new Float32Array(4);
+function letterStrandPoint(strand, s, time) {
+  const head = ((strand.phase + time * strand.hSpeed) % 1) * (1 + strand.hLength);
+  const t = clamp(head - strand.hLength * (1 - s), 0, 1);
+  letterPoint[3] = 0;
+  if (strand.hStroke < 2) {
+    // Sütun: aşağıdan yukarı. İç kenar, orta çizginin birleştiği yerde boşluk bırakır
+    const side = strand.hStroke === 0 ? -1 : 1;
+    const innerEdge = strand.hEdge && strand.hAcross < 0;
+    const width = H_COLUMN[1] - H_COLUMN[0];
+    letterPoint[0] = side * ((H_COLUMN[0] + H_COLUMN[1]) / 2 + strand.hAcross * width);
+    if (innerEdge) {
+      let y = 0.5 - t * (1 - 2 * H_BAR);
+      if (y < H_BAR) {
+        y -= 2 * H_BAR;
+        letterPoint[3] = 1;
+      }
+      letterPoint[1] = y;
+    } else {
+      letterPoint[1] = 0.5 - t;
+    }
+  } else {
+    // Orta çizgi: soldan sağa
+    letterPoint[0] = -H_COLUMN[0] + t * 2 * H_COLUMN[0];
+    letterPoint[1] = strand.hAcross * 2 * H_BAR;
+  }
+  letterPoint[2] = strand.hDepth;
+  // İz şeride girerken ve çıkarken yumuşakça belirip söner
+  return Math.min(1, head / 0.08, (1 + strand.hLength - head) / 0.08);
+}
+
 function drawHelio(time) {
   const w = helioCanvas.width;
   const h = helioCanvas.height;
@@ -586,6 +618,12 @@ function drawHelio(time) {
   const sunZoom = (1 - 0.16 * smooth(clamp(p / HELIO_TO_SPHERE[0], 0, 1))) * (1 - 0.85 * pulledBack);
   // 2. adım: kabarcık geçişte büyüyerek açılır; duvar yavaşça nefes alıp verir (helyopoz döngüsü)
   const bubbleSize = (0.35 + 0.65 * pulledBack) * (1 + 0.05 * Math.sin(time * 0.0007));
+  // 3. adım: H hafifçe sağa sola salınır (derinliği görünür); çapraz bir ışık arada bir üzerinden geçer
+  const letterWeight = smooth(toLetter);
+  const letterTurn = 0.2 * Math.sin(time * 0.00045);
+  const letterCos = Math.cos(letterTurn);
+  const letterSin = Math.sin(letterTurn);
+  const shine = -1.4 + ((time * 0.00018) % 1) * 3.4;
 
   // Kabarcığın ekseni: kuyruk sağa, aşağıya ve ekranın içine doğru; kaydırdıkça hafifçe döner
   const yaw = 0.36 + p * 0.3;
@@ -706,7 +744,18 @@ function drawHelio(time) {
 
   const paths = HELIO_COLORS.map(() => Array.from({ length: HELIO_LEVELS }, () => new Path2D()));
   const tips = new Path2D();
+  const sparks = new Path2D();
   const tipSize = Math.max(1, w / 900);
+
+  // 3. adım: H'nin arkasında hafif gümüş bir ışıma
+  if (letterWeight > 0.01) {
+    const r = unit * 0.95;
+    const halo = helioCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    halo.addColorStop(0, `rgba(220, 226, 240, ${0.08 * letterWeight})`);
+    halo.addColorStop(1, 'rgba(220, 226, 240, 0)');
+    helioCtx.fillStyle = halo;
+    helioCtx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  }
 
   for (const strand of helioStrands) {
     // Teller aynı anda değil, biraz dağınık sırayla biçim değiştirir
@@ -721,6 +770,8 @@ function drawHelio(time) {
     const sunVisible = (1 - flight) ** 1.3 * Math.min(1, flight * 10);
 
     let visible = 0;
+    let letterBright = 0;
+    let gapAt = -1;
     let depthSum = 0;
     for (let i = 0; i < HELIO_POINTS; i++) {
       const s = i / (HELIO_POINTS - 1);
@@ -743,10 +794,19 @@ function drawHelio(time) {
         visible = sunVisible;
       }
       if (b > 0) {
-        const o = i * 3;
-        x += (strand.letter[o] - x) * b;
-        y += (strand.letter[o + 1] - y) * b;
-        z += (strand.letter[o + 2] - z) * b;
+        const seen = letterStrandPoint(strand, s, time);
+        const lx = letterPoint[0] * letterCos - letterPoint[2] * letterSin;
+        const lz = letterPoint[0] * letterSin + letterPoint[2] * letterCos;
+        x += (lx - x) * b;
+        y += (letterPoint[1] - y) * b;
+        z += (lz - z) * b;
+        if (letterPoint[3] && gapAt < 0) gapAt = i;
+        if (i === HELIO_POINTS - 1) {
+          // Kenarlar parlak, içi sönük; üst taraf daha açık (sitedeki gümüş geçiş); geçen ışık parlatır
+          const silver = 0.62 + 0.38 * (0.5 - letterPoint[1]);
+          const glint = Math.exp(-(((letterPoint[0] * 0.8 - letterPoint[1] * 0.6 - shine) / 0.13) ** 2));
+          letterBright = seen * Math.min(1, (strand.hEdge ? 0.95 : 0.4) * silver + 0.65 * glint);
+        }
       }
 
       // Perspektifle ekrana yansıt
@@ -756,17 +816,24 @@ function drawHelio(time) {
       depthSum += z;
     }
 
-    visible = visible * (1 - b) + b;
-    if (visible < 0.04) continue;
     const near = clamp((depthSum / HELIO_POINTS + 0.6) / 1.2, 0, 1);
-    const level = clamp(Math.floor((0.3 + 0.7 * near) * visible * HELIO_LEVELS), 0, HELIO_LEVELS - 1);
-    // H harfi eskisi gibi tek renk (gümüş) olsun
+    const value = (0.3 + 0.7 * near) * visible * (1 - b) + letterBright * b;
+    if (value < 0.04) continue;
+    const level = clamp(Math.floor(value * HELIO_LEVELS), 0, HELIO_LEVELS - 1);
+    // H harfi tek renk (gümüş) olsun
     const path = paths[b > 0.5 ? WIND : strand.role][level];
     path.moveTo(helioScreen[0], helioScreen[1]);
-    for (let i = 1; i < HELIO_POINTS; i++) path.lineTo(helioScreen[i * 2], helioScreen[i * 2 + 1]);
-    if (strand.role === WIND && visible > 0.3) {
-      const last = (HELIO_POINTS - 1) * 2;
+    for (let i = 1; i < HELIO_POINTS; i++) {
+      // Sütunun iç kenarı orta çizginin üstünden atlar: H'nin birleşim yerinde çizgi olmasın
+      if (i === gapAt && b > 0.5) path.moveTo(helioScreen[i * 2], helioScreen[i * 2 + 1]);
+      else path.lineTo(helioScreen[i * 2], helioScreen[i * 2 + 1]);
+    }
+    const last = (HELIO_POINTS - 1) * 2;
+    if (b < 0.5 && strand.role === WIND && visible > 0.3) {
       tips.rect(helioScreen[last] - tipSize, helioScreen[last + 1] - tipSize, tipSize * 2, tipSize * 2);
+    } else if (b >= 0.5 && strand.hSpark && letterBright > 0.25) {
+      // H'de izlerin bir kısmının başında küçük beyaz kıvılcımlar
+      sparks.rect(helioScreen[last] - tipSize * 0.75, helioScreen[last + 1] - tipSize * 0.75, tipSize * 1.5, tipSize * 1.5);
     }
   }
 
@@ -779,6 +846,36 @@ function drawHelio(time) {
   });
   helioCtx.fillStyle = 'rgba(255, 200, 130, 0.85)';
   helioCtx.fill(tips);
+  helioCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  helioCtx.fill(sparks);
+
+  // 3. adım: H'nin gövdesi (simgedeki gibi üstten alta açılan çok hafif gümüş) ve üzerinden geçen ışık şeridi.
+  // Teller harfi büyük ölçüde kurduktan sonra belirir
+  const letterBody = smooth(clamp((letterWeight - 0.5) * 2, 0, 1));
+  if (letterBody > 0.01) {
+    const project = (hx, hy) => {
+      const scale = 2.8 / (2.8 - hx * letterSin);
+      return [cx + hx * letterCos * scale * unit, cy + hy * scale * unit];
+    };
+    const body = new Path2D();
+    H_OUTLINE.forEach(([hx, hy]) => body.lineTo(...project(hx, hy)));
+    body.closePath();
+    const fill = helioCtx.createLinearGradient(0, cy - 0.5 * unit, 0, cy + 0.5 * unit);
+    fill.addColorStop(0.15, `rgba(255, 255, 255, ${0.07 * letterBody})`);
+    fill.addColorStop(1, `rgba(154, 154, 160, ${0.025 * letterBody})`);
+    helioCtx.fillStyle = fill;
+    helioCtx.fill(body);
+    // Işık şeridi sol alttan sağ üste doğru geçer (shine, harfin üzerindeki konumu)
+    const band = helioCtx.createLinearGradient(
+      ...project(0.8 * (shine - 0.3), -0.6 * (shine - 0.3)),
+      ...project(0.8 * (shine + 0.3), -0.6 * (shine + 0.3)),
+    );
+    band.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    band.addColorStop(0.5, `rgba(255, 255, 255, ${0.24 * letterBody})`);
+    band.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    helioCtx.fillStyle = band;
+    helioCtx.fill(body);
+  }
 
   // 2. adım: sonlanma şoku, Güneş'in çevresinde iki ince halka
   if (bubbleWeight > 0.01) {
