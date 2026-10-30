@@ -1,0 +1,47 @@
+# İletişim Worker'ı arka uç API, sınır değer, OpenAPI sözleşme ve Postman (Newman) testleri.
+# Testler CI içinde yerel Worker (wrangler dev), sahte Gemini ve sahte Access JWKS sunucuları açar;
+# canlı veritabanına, Gemini'ye ve e-postaya hiçbir şey gitmez.
+name: API testleri
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "iletisim-worker/**"
+      - ".github/workflows/api-testleri.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: iletisim-worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: iletisim-worker/package-lock.json
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:api
+        env:
+          CI: "1"
+      - run: npm run test:postman
+        env:
+          CI: "1"
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-raporu
+          path: |
+            iletisim-worker/api-testleri/rapor/
+            iletisim-worker/api-testleri/sonuclar/
