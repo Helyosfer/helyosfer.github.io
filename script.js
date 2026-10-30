@@ -320,17 +320,41 @@ if (reducedMotion) {
 }
 
 // ---------- Helyosfer sahnesi ----------
-// Yüzlerce tel kaydırdıkça üç biçim arasında geçer: yandan akan demet (Güneş rüzgârı), ortası parlayan
-// ışınsal küre (heliosfer) ve sitenin simgesindeki H. Her telin üç biçimdeki noktaları bir kez hesaplanır;
-// her karede bölümün ilerlemesine (--p) göre aralarında karıştırılır. Kökler sönük, uçlar parlak.
-// DÜZENLE: tel sayısı (telefonda daha az), tel başına nokta sayısı ve geçiş aralıkları.
+// NASA'nın "Heliopause Cycle" videosundaki akışı izler. Kaydırdıkça üç biçim arasında geçer:
+//  1) Güneş rüzgârı: dokulu, parlayan Güneş; her yöne fırlayan parçacık izleri ve yanda hilal bir gezegen.
+//  2) Helyosfer: kamera geri çekilir, Güneş bir noktaya iner, kuyruklu kabarcık açılır. İçeride parçacıklar
+//     Güneş'ten sonlanma şokuna (ince halkalar) koşar, oradan kabarcığın duvarı boyunca kuyruğa süpürülür.
+//     Duvar (helyopoz) yavaşça nefes alıp verir; dışarıda yıldızlararası rüzgâr kabarcığın çevresinden akar.
+//  3) Sitenin simgesindeki H.
+// Her tel bir parçacık izi. Her karede telin üç biçimdeki noktaları hesaplanır ve bölümün ilerlemesine (--p)
+// göre aralarında karıştırılır. Hareket azaltılınca zaman durur, helyosfer sabit görünür.
+// DÜZENLE: tel sayısı (telefonda daha az), renkler, ölçüler ve geçiş aralıkları.
 // Geçiş aralıkları style.css'teki yazıların dilimleriyle (0.30 ve 0.64) uyumlu olmalı.
 const HELIO_STRANDS = 640;
 const HELIO_STRANDS_PHONE = 300;
-const HELIO_POINTS = 22;
+const HELIO_POINTS = 14;
 const HELIO_TO_SPHERE = [0.2, 0.42];
 const HELIO_TO_H = [0.56, 0.78];
-const HELIO_LEVELS = 8; // derinliğe göre parlaklık basamakları: her basamak tek seferde çizilir
+const HELIO_LEVELS = 8; // parlaklık basamakları: her basamak tek seferde çizilir
+
+// Tel türleri ve renkleri: [r, g, b, en sönük opaklık, en parlak opaklık]
+const WIND = 0; // Güneş rüzgârı parçacıkları
+const WALL = 1; // helyopoz: kabarcığın duvarı
+const ISM = 2; // yıldızlararası rüzgâr
+const HELIO_COLORS = [
+  [218, 222, 232, 0.12, 0.5],
+  [255, 172, 128, 0.08, 0.42],
+  [200, 186, 176, 0.03, 0.1],
+];
+
+// Ölçüler ("unit" cinsinden; unit ≈ sahnenin kısa kenarının %40'ı)
+const SUN_R = 0.3; // 1. adımda Güneş'in yarıçapı
+const BUBBLE_R = 0.64; // kabarcığın yan yarıçapı
+const BUBBLE_NOSE = 0.56; // Güneş'ten burna uzaklık (burun yıldızlararası rüzgâra bakar, biraz basıktır)
+const BUBBLE_TAIL = 1.5; // kuyruğun uzunluğu
+const BUBBLE_CAP = 0.3; // duvar profilinde yuvarlak baş kısmın payı
+const SHOCK_R = 0.27; // sonlanma şoku (iç halka)
+const BUBBLE_SHIFT = [-0.24, -0.12]; // kuyruğa yer açmak için Güneş biraz sola ve yukarı kayar
 
 const helioCanvas = document.querySelector('.helio-canvas');
 const helioCtx = helioCanvas.getContext('2d');
@@ -338,42 +362,96 @@ const helioSection = helioCanvas.closest('[data-pin]');
 const helioScreen = new Float32Array(HELIO_POINTS * 2);
 let helioStrands = [];
 let helioPinned = false;
+let sunTexture = null;
 
 const smooth = (t) => t * t * (3 - 2 * t);
+const mix = (from, to, t) => from + (to - from) * t;
 
-// Demetin omurgası: sağ üstten girip sola doğru inen bir eğri (kübik Bézier)
-const BUNDLE_SPINE = [[1.9, -1.15], [0.8, -0.8], [0.25, -0.05], [-0.3, 0.45]];
-function bundleSpine(s) {
-  const k = [(1 - s) ** 3, 3 * (1 - s) ** 2 * s, 3 * (1 - s) * s * s, s ** 3];
-  return [0, 1].map((axis) => k.reduce((sum, weight, i) => sum + weight * BUNDLE_SPINE[i][axis], 0));
+// Kabarcığın ekseni (kuyruk yönü) ve ona dik iki yön; her karede bakış açısına göre yeniden hesaplanır
+const axis = new Float32Array(3);
+const axisU = new Float32Array(3);
+const axisV = new Float32Array(3);
+const profilePoint = new Float32Array(2);
+const local = new Float32Array(3);
+
+// Duvarın yan kesiti: u = 0 burun, u = 1 kuyruğun ucu. [eksen boyunca konum, eksene uzaklık]
+function bubbleProfile(u) {
+  if (u < BUBBLE_CAP) {
+    const angle = (u / BUBBLE_CAP) * Math.PI / 2;
+    profilePoint[0] = -BUBBLE_NOSE * Math.cos(angle);
+    profilePoint[1] = BUBBLE_R * Math.sin(angle);
+  } else {
+    const t = (u - BUBBLE_CAP) / (1 - BUBBLE_CAP);
+    profilePoint[0] = BUBBLE_TAIL * t;
+    profilePoint[1] = BUBBLE_R * (1 - 0.14 * t * t);
+  }
+}
+
+// Kuyruğa doğru solma (1: tam parlak)
+function tailFade(u) {
+  const t = Math.max(0, (u - BUBBLE_CAP) / (1 - BUBBLE_CAP));
+  return 1 - t ** 2.2;
+}
+
+// Güneş yüzeyi bir kez, ekran dışı bir canvas'a çizilir: sıcak renk, tanecikli doku, kenarda kararma
+function makeSunTexture() {
+  const size = 256;
+  const r = size / 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const g = canvas.getContext('2d');
+  g.beginPath();
+  g.arc(r, r, r, 0, Math.PI * 2);
+  g.clip();
+  const base = g.createRadialGradient(r * 0.8, r * 0.78, 0, r, r, r);
+  base.addColorStop(0, '#fff7e2');
+  base.addColorStop(0.3, '#ffd88a');
+  base.addColorStop(0.75, '#f5a04a');
+  base.addColorStop(1, '#c75f22');
+  g.fillStyle = base;
+  g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 1400; i++) {
+    const dot = 1.5 + Math.random() * 6;
+    g.fillStyle = Math.random() < 0.55 ? 'rgba(150, 50, 0, 0.13)' : 'rgba(255, 244, 214, 0.14)';
+    g.beginPath();
+    g.arc(Math.random() * size, Math.random() * size, dot, 0, Math.PI * 2);
+    g.fill();
+  }
+  const limb = g.createRadialGradient(r, r, r * 0.5, r, r, r);
+  limb.addColorStop(0, 'rgba(90, 20, 0, 0)');
+  limb.addColorStop(1, 'rgba(90, 20, 0, 0.6)');
+  g.fillStyle = limb;
+  g.fillRect(0, 0, size, size);
+  return canvas;
 }
 
 function buildHelio(count) {
   helioStrands = [];
   for (let n = 0; n < count; n++) {
-    const bundle = new Float32Array(HELIO_POINTS * 3);
-    const sphere = new Float32Array(HELIO_POINTS * 3);
-    const letter = new Float32Array(HELIO_POINTS * 3);
+    const pick = Math.random();
+    const role = pick < 0.5 ? WIND : pick < 0.92 ? WALL : ISM;
 
-    // Demet: tel, kesitte bir dairenin içinde durur; uca doğru açılır ve demetin ekseni etrafında burulur
-    const ringRadius = Math.sqrt(Math.random());
-    const ringAngle = Math.random() * Math.PI * 2;
-    const reach = 0.82 + Math.random() * 0.18;
-
-    // Küre: yönler Fibonacci dağılımıyla küreye eşit yayılır; her diken bir yana hafifçe kıvrılır
+    // Yönler Fibonacci dağılımıyla küreye eşit yayılır (Güneş'ten fırlayan izler ve kabarcıktaki parçacıklar)
     const y = 1 - (2 * (n + 0.5)) / count;
     const ring = Math.sqrt(1 - y * y);
     const dir = [Math.cos(n * 2.399963) * ring, y, Math.sin(n * 2.399963) * ring];
-    const side = ring > 0.01 ? [-dir[2] / ring, 0, dir[0] / ring] : [1, 0, 0];
-    const spike = 0.36 + Math.random() * 0.16;
+
+    // Kabarcıkta: dir[0] kuyruk yönü. Burundan açı ve eksen çevresindeki açı
+    const fromNose = Math.acos(clamp(-dir[0], -1, 1));
+    const around = Math.atan2(dir[2], dir[1]);
+    const startU = fromNose <= Math.PI / 2
+      ? BUBBLE_CAP * (fromNose / (Math.PI / 2))
+      : BUBBLE_CAP + ((fromNose - Math.PI / 2) / (Math.PI / 2)) * 0.12;
 
     // H: tellerin %42'si sol sütunda, %42'si sağ sütunda (kökler altta), %16'sı ortadaki çizgide
-    const pick = Math.random();
+    const letter = new Float32Array(HELIO_POINTS * 3);
+    const hPick = Math.random();
     const depth = (Math.random() - 0.5) * 0.08;
     let from;
     let to;
-    if (pick < 0.84) {
-      const x = (pick < 0.42 ? -0.42 : 0.22) + Math.random() * 0.2;
+    if (hPick < 0.84) {
+      const x = (hPick < 0.42 ? -0.42 : 0.22) + Math.random() * 0.2;
       from = [x, 0.5 - Math.random() * 0.03];
       to = [x, -0.5 + Math.random() * 0.03];
     } else {
@@ -381,29 +459,36 @@ function buildHelio(count) {
       from = [-0.24 + Math.random() * 0.02, bar];
       to = [0.24 - Math.random() * 0.02, bar];
     }
-
     for (let i = 0; i < HELIO_POINTS; i++) {
       const s = i / (HELIO_POINTS - 1);
-      const o = i * 3;
-
-      const t = s * reach;
-      const [bx, by] = bundleSpine(t);
-      const spread = 0.04 + 0.5 * t ** 2.4;
-      const twist = ringAngle + t * 2.6;
-      const across = Math.cos(twist) * ringRadius * spread;
-      bundle[o] = bx + 0.58 * across;
-      bundle[o + 1] = by + 0.81 * across;
-      bundle[o + 2] = Math.sin(twist) * ringRadius * spread;
-
-      const radius = 0.13 + spike * s;
-      const curl = 0.1 * s * s;
-      for (let a = 0; a < 3; a++) sphere[o + a] = dir[a] * radius + side[a] * curl;
-
-      letter[o] = from[0] + (to[0] - from[0]) * s;
-      letter[o + 1] = from[1] + (to[1] - from[1]) * s;
-      letter[o + 2] = depth;
+      letter[i * 3] = from[0] + (to[0] - from[0]) * s;
+      letter[i * 3 + 1] = from[1] + (to[1] - from[1]) * s;
+      letter[i * 3 + 2] = depth;
     }
-    helioStrands.push({ bundle, sphere, letter, delay: Math.random() * 0.3, phase: Math.random() * Math.PI * 2 });
+
+    helioStrands.push({
+      role,
+      dir,
+      around,
+      startU,
+      shock: SHOCK_R * (1 + 0.35 * dir[0]), // şok, kuyruk tarafında daha uzakta
+      letter,
+      delay: Math.random() * 0.3,
+      phase: Math.random(),
+      // 1. adım: Güneş'ten fırlama hızı ve iz uzunluğu
+      sunSpeed: 1 / (2600 + Math.random() * 2200),
+      sunLength: 0.6 + Math.random() * 0.8,
+      // 2. adım: tür başına hız ve iz uzunluğu
+      speed: role === WIND ? 1 / (7000 + Math.random() * 5000)
+        : role === WALL ? 1 / (22000 + Math.random() * 14000)
+          : 1 / (9000 + Math.random() * 6000),
+      length: role === WIND ? 0.03 + Math.random() * 0.04
+        : role === WALL ? 0.04 + Math.random() * 0.06
+          : 0.06 + Math.random() * 0.08,
+      wallAround: Math.random() * Math.PI * 2,
+      wallRadius: 0.97 + Math.random() * 0.06,
+      ismDistance: BUBBLE_R * (1.1 + Math.random() * 1.3),
+    });
   }
 }
 
@@ -411,10 +496,74 @@ function resizeHelio() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   helioCanvas.width = Math.round(helioCanvas.clientWidth * dpr);
   helioCanvas.height = Math.round(helioCanvas.clientHeight * dpr);
-  // Sabitlenmeyen hâlde (hareket azaltma, kısa ekran) küre gösterilir
+  // Sabitlenmeyen hâlde (hareket azaltma, kısa ekran) helyosfer gösterilir
   helioPinned = helioSection.offsetHeight > window.innerHeight * 1.2;
   const count = helioCanvas.clientWidth < 560 ? HELIO_STRANDS_PHONE : HELIO_STRANDS;
   if (count !== helioStrands.length) buildHelio(count);
+}
+
+// Kabarcıktaki bir noktayı (yerel koordinat: [kuyruk yönü, iki yan]) ekran düzlemine çevirir
+function bubbleToView(lx, ly, lz, out, o) {
+  out[o] = axis[0] * lx + axisU[0] * ly + axisV[0] * lz + BUBBLE_SHIFT[0];
+  out[o + 1] = axis[1] * lx + axisU[1] * ly + axisV[1] * lz + BUBBLE_SHIFT[1];
+  out[o + 2] = axis[2] * lx + axisU[2] * ly + axisV[2] * lz;
+}
+
+// 2. adımda bir telin s'inci noktası (s = 0 izin kuyruğu, 1 başı). Görünürlüğü (0–1) döndürür.
+const bubblePoint = new Float32Array(3);
+function bubbleStrandPoint(strand, s, time, size) {
+  if (strand.role === WIND) {
+    // Güneş → sonlanma şoku (düz), sonra duvar boyunca kuyruğa
+    const head = (strand.phase + time * strand.speed) % 1;
+    const tau = Math.max(0, head - strand.length * (1 - s));
+    const shock = strand.shock * size;
+    const d = strand.dir;
+    if (tau < 0.45) {
+      const r = shock * (tau / 0.45);
+      bubbleToView(d[0] * r, d[1] * r, d[2] * r, bubblePoint, 0);
+    } else {
+      const q = (tau - 0.45) / 0.55;
+      const u = strand.startU + (1 - strand.startU) * q ** 1.4 * 0.92;
+      bubbleProfile(u);
+      const wx = profilePoint[0] * 0.86 * size;
+      const wr = profilePoint[1] * 0.86 * size;
+      const m = smooth(Math.min(1, q * 2.2));
+      bubbleToView(
+        mix(d[0] * shock, wx, m),
+        mix(d[1] * shock, wr * Math.cos(strand.around), m),
+        mix(d[2] * shock, wr * Math.sin(strand.around), m),
+        bubblePoint, 0,
+      );
+    }
+    if (head < 0.45) return Math.min(1, head * 12);
+    const q = (head - 0.45) / 0.55;
+    return tailFade(strand.startU + (1 - strand.startU) * q ** 1.4 * 0.92);
+  }
+
+  if (strand.role === WALL) {
+    // Duvar boyunca burundan kuyruğa akan izler; eksen çevresinde çok yavaş döner
+    const head = 0.04 + ((strand.phase + time * strand.speed) % 1) * 1.08;
+    const u = clamp(head - strand.length * (1 - s), 0.04, 1);
+    bubbleProfile(u);
+    const r = profilePoint[1] * strand.wallRadius * size;
+    const angle = strand.wallAround + time * 0.00004;
+    bubbleToView(profilePoint[0] * size, r * Math.cos(angle), r * Math.sin(angle), bubblePoint, 0);
+    if (head > 1) return 0;
+    // Kenardan (silüetten) görülen duvar daha parlak: videodaki parlayan kabuk
+    const facing = Math.abs(axisU[2] * Math.cos(angle) + axisV[2] * Math.sin(angle));
+    return Math.min(1, (head - 0.04) * 10) * tailFade(head) * (1 - 0.7 * facing);
+  }
+
+  // Yıldızlararası rüzgâr: burun tarafından gelir, kabarcığın çevresinden dolaşıp kuyruk yönünde gider
+  const flow = (strand.phase + time * strand.speed) % 1;
+  const head = -1.3 + flow * 3.4;
+  const x = head - strand.length * 1.4 * (1 - s);
+  let wall = 0;
+  if (x > -BUBBLE_NOSE && x <= 0) wall = BUBBLE_R * Math.sqrt(1 - (x / BUBBLE_NOSE) ** 2);
+  else if (x > 0) wall = BUBBLE_R * (1 - 0.14 * Math.min(1, x / BUBBLE_TAIL) ** 2);
+  const r = Math.sqrt(strand.ismDistance ** 2 + (wall * size) ** 2);
+  bubbleToView(x * size, r * Math.cos(strand.wallAround), r * Math.sin(strand.wallAround), bubblePoint, 0);
+  return Math.sin(Math.PI * flow);
 }
 
 function drawHelio(time) {
@@ -427,35 +576,135 @@ function drawHelio(time) {
   const toSphere = clamp((p - HELIO_TO_SPHERE[0]) / (HELIO_TO_SPHERE[1] - HELIO_TO_SPHERE[0]), 0, 1);
   const toLetter = clamp((p - HELIO_TO_H[0]) / (HELIO_TO_H[1] - HELIO_TO_H[0]), 0, 1);
 
-  // Küre kaydırdıkça döner ve hafifçe öne eğilir; demet ve H düz durur
-  const sphereWeight = smooth(toSphere) * (1 - smooth(toLetter));
-  const turn = sphereWeight * (p * 5 + Math.sin(time * 0.0004) * 0.3);
-  const tilt = sphereWeight * 0.35;
-  const cosY = Math.cos(turn);
-  const sinY = Math.sin(turn);
-  const cosX = Math.cos(tilt);
-  const sinX = Math.sin(tilt);
+  const pulledBack = smooth(toSphere); // 0: Güneş yakında, 1: kamera geri çekildi
+  const bubbleWeight = pulledBack * (1 - smooth(toLetter));
+  const sunWeight = 1 - pulledBack;
+  // Geri çekilirken kısa bir ışık patlaması (videodaki gibi)
+  const flash = Math.sin(Math.PI * pulledBack) ** 2;
+
+  // 1. adım: kamera yavaşça geri çekilir; geçişte her şey Güneş'e doğru küçülür
+  const sunZoom = (1 - 0.16 * smooth(clamp(p / HELIO_TO_SPHERE[0], 0, 1))) * (1 - 0.85 * pulledBack);
+  // 2. adım: kabarcık geçişte büyüyerek açılır; duvar yavaşça nefes alıp verir (helyopoz döngüsü)
+  const bubbleSize = (0.35 + 0.65 * pulledBack) * (1 + 0.05 * Math.sin(time * 0.0007));
+
+  // Kabarcığın ekseni: kuyruk sağa, aşağıya ve ekranın içine doğru; kaydırdıkça hafifçe döner
+  const yaw = 0.36 + p * 0.3;
+  const pitch = 0.36;
+  axis[0] = Math.cos(pitch) * Math.cos(yaw);
+  axis[1] = Math.sin(pitch);
+  axis[2] = -Math.cos(pitch) * Math.sin(yaw);
+  const across = Math.hypot(axis[0], axis[1]);
+  axisU[0] = axis[1] / across;
+  axisU[1] = -axis[0] / across;
+  axisU[2] = 0;
+  axisV[0] = axis[1] * axisU[2] - axis[2] * axisU[1];
+  axisV[1] = axis[2] * axisU[0] - axis[0] * axisU[2];
+  axisV[2] = axis[0] * axisU[1] - axis[1] * axisU[0];
 
   // Telefonda sahne dar; şekil alanı biraz daha doldursun
   const unit = Math.min(w, h) * (helioCanvas.clientWidth < 560 ? 0.46 : 0.4);
   const cx = w / 2;
   const cy = h / 2;
-  const wave = time * 0.0012;
+  const line = Math.max(1, w / 1400);
+  const sunX = cx + BUBBLE_SHIFT[0] * pulledBack * unit;
+  const sunY = cy + BUBBLE_SHIFT[1] * pulledBack * unit;
 
   helioCtx.clearRect(0, 0, w, h);
-  helioCtx.globalCompositeOperation = 'lighter';
 
-  // Kürenin ortasındaki sıcak ışık
-  if (sphereWeight > 0.01) {
-    const glow = helioCtx.createRadialGradient(cx, cy, 0, cx, cy, unit * 0.6);
-    glow.addColorStop(0, `rgba(255, 226, 180, ${0.55 * sphereWeight})`);
-    glow.addColorStop(0.35, `rgba(255, 170, 90, ${0.18 * sphereWeight})`);
-    glow.addColorStop(1, 'rgba(255, 170, 90, 0)');
-    helioCtx.fillStyle = glow;
-    helioCtx.fillRect(cx - unit, cy - unit, unit * 2, unit * 2);
+  // 1. adım: Güneş'in yanındaki hilal gezegen (Güneş'e bakan yüzü aydınlık)
+  if (sunWeight > 0.01) {
+    const px = sunX + 0.95 * sunZoom * unit;
+    const py = sunY - 0.42 * sunZoom * unit;
+    const pr = 0.055 * sunZoom * unit;
+    const toSun = Math.hypot(px - sunX, py - sunY) || 1;
+    const lx = px + ((sunX - px) / toSun) * pr * 0.9;
+    const ly = py + ((sunY - py) / toSun) * pr * 0.9;
+    const lit = helioCtx.createRadialGradient(lx, ly, 0, lx, ly, pr * 1.7);
+    lit.addColorStop(0, `rgba(226, 232, 242, ${0.95 * sunWeight})`);
+    lit.addColorStop(0.45, `rgba(120, 140, 170, ${0.35 * sunWeight})`);
+    lit.addColorStop(0.7, 'rgba(0, 0, 0, 0)');
+    helioCtx.save();
+    helioCtx.beginPath();
+    helioCtx.arc(px, py, pr, 0, Math.PI * 2);
+    helioCtx.clip();
+    helioCtx.fillStyle = lit;
+    helioCtx.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+    helioCtx.restore();
   }
 
-  const paths = Array.from({ length: HELIO_LEVELS }, () => new Path2D());
+  helioCtx.globalCompositeOperation = 'lighter';
+
+  // 1. adım: Güneş'in tacı (korona)
+  if (sunWeight > 0.01) {
+    const r = SUN_R * sunZoom * unit;
+    const corona = helioCtx.createRadialGradient(sunX, sunY, r * 0.8, sunX, sunY, r * 2.6);
+    corona.addColorStop(0, `rgba(255, 196, 120, ${0.4 * sunWeight})`);
+    corona.addColorStop(0.35, `rgba(255, 150, 70, ${0.12 * sunWeight})`);
+    corona.addColorStop(1, 'rgba(255, 150, 70, 0)');
+    helioCtx.fillStyle = corona;
+    helioCtx.fillRect(sunX - r * 2.6, sunY - r * 2.6, r * 5.2, r * 5.2);
+  }
+
+  // 2. adım: kabarcığın yuvarlak başındaki sıcak parıltı (helyopoz) ve ortadaki Güneş noktası
+  const capR = BUBBLE_R * bubbleSize * unit;
+  if (bubbleWeight > 0.01) {
+    const rim = helioCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, capR * 1.18);
+    rim.addColorStop(0, 'rgba(255, 160, 120, 0)');
+    rim.addColorStop(0.62, `rgba(150, 90, 140, ${0.05 * bubbleWeight})`);
+    rim.addColorStop(0.84, `rgba(255, 150, 110, ${0.2 * bubbleWeight})`);
+    rim.addColorStop(1, 'rgba(255, 150, 110, 0)');
+    helioCtx.fillStyle = rim;
+    helioCtx.fillRect(sunX - capR * 1.2, sunY - capR * 1.2, capR * 2.4, capR * 2.4);
+
+    // Kabarcığın dış hattı (yandan görünen kenarı): burunda parlak, kuyruğa doğru söner.
+    // İçi sitenin vurgu rengiyle çok hafif dolar (videodaki mor iç kısım)
+    const outline = new Path2D();
+    const toScreen = (lx, side) => {
+      bubbleProfile(lx);
+      const x = profilePoint[0] * bubbleSize;
+      const r = profilePoint[1] * bubbleSize * side;
+      const z = axis[2] * x;
+      const scale = 2.8 / (2.8 - z);
+      return [
+        cx + (axis[0] * x + axisU[0] * r + BUBBLE_SHIFT[0]) * scale * unit,
+        cy + (axis[1] * x + axisU[1] * r + BUBBLE_SHIFT[1]) * scale * unit,
+      ];
+    };
+    for (let i = 40; i >= 0; i--) outline.lineTo(...toScreen(i / 40, 1));
+    for (let i = 1; i <= 40; i++) outline.lineTo(...toScreen(i / 40, -1));
+    const [noseX, noseY] = toScreen(0, 1);
+    const tailX = cx + (axis[0] * BUBBLE_TAIL * bubbleSize + BUBBLE_SHIFT[0]) * unit;
+    const tailY = cy + (axis[1] * BUBBLE_TAIL * bubbleSize + BUBBLE_SHIFT[1]) * unit;
+    const along = (r, g, bl, alpha) => {
+      const gradient = helioCtx.createLinearGradient(noseX, noseY, tailX, tailY);
+      gradient.addColorStop(0, `rgba(${r}, ${g}, ${bl}, ${alpha})`);
+      gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${bl}, ${alpha * 0.6})`);
+      gradient.addColorStop(0.8, `rgba(${r}, ${g}, ${bl}, 0)`);
+      gradient.addColorStop(1, `rgba(${r}, ${g}, ${bl}, 0)`);
+      return gradient;
+    };
+    helioCtx.fillStyle = along(150, 120, 230, 0.07 * bubbleWeight);
+    helioCtx.fill(outline);
+    helioCtx.strokeStyle = along(255, 156, 112, 0.16 * bubbleWeight);
+    helioCtx.lineWidth = unit * 0.05;
+    helioCtx.stroke(outline);
+    helioCtx.strokeStyle = along(255, 190, 150, 0.5 * bubbleWeight);
+    helioCtx.lineWidth = line * 1.4;
+    helioCtx.stroke(outline);
+  }
+  const glowWeight = Math.min(1, 0.6 * bubbleWeight + 0.9 * flash);
+  if (glowWeight > 0.01) {
+    const r = unit * (0.32 + 0.35 * flash);
+    const glow = helioCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, r);
+    glow.addColorStop(0, `rgba(255, 244, 226, ${glowWeight})`);
+    glow.addColorStop(0.08, `rgba(255, 220, 170, ${0.55 * glowWeight})`);
+    glow.addColorStop(0.3, `rgba(255, 170, 90, ${0.1 * glowWeight})`);
+    glow.addColorStop(1, 'rgba(255, 170, 90, 0)');
+    helioCtx.fillStyle = glow;
+    helioCtx.fillRect(sunX - r, sunY - r, r * 2, r * 2);
+  }
+
+  const paths = HELIO_COLORS.map(() => Array.from({ length: HELIO_LEVELS }, () => new Path2D()));
   const tips = new Path2D();
   const tipSize = Math.max(1, w / 900);
 
@@ -463,46 +712,102 @@ function drawHelio(time) {
     // Teller aynı anda değil, biraz dağınık sırayla biçim değiştirir
     const a = smooth(clamp(toSphere * 1.3 - strand.delay, 0, 1));
     const b = smooth(clamp(toLetter * 1.3 - strand.delay, 0, 1));
+    const d = strand.dir;
+
+    // 1. adım: Güneş yüzeyinden dışarı fırlayan iz; uzaklaştıkça söner. Geçişte iz uzar (hız çizgileri)
+    const flight = (strand.phase + time * strand.sunSpeed) % 1;
+    const sunHead = SUN_R * (1.04 + flight * 2.6);
+    const sunTrail = SUN_R * (0.12 + 0.55 * flight) * strand.sunLength * (1 + 4 * flash);
+    const sunVisible = (1 - flight) ** 1.3 * Math.min(1, flight * 10);
+
+    let visible = 0;
     let depthSum = 0;
-
     for (let i = 0; i < HELIO_POINTS; i++) {
-      const o = i * 3;
-      let x = strand.bundle[o] + (strand.sphere[o] - strand.bundle[o]) * a;
-      let y = strand.bundle[o + 1] + (strand.sphere[o + 1] - strand.bundle[o + 1]) * a;
-      let z = strand.bundle[o + 2] + (strand.sphere[o + 2] - strand.bundle[o + 2]) * a;
-      x += (strand.letter[o] - x) * b;
-      y += (strand.letter[o + 1] - y) * b;
-      z += (strand.letter[o + 2] - z) * b;
-      // Demet rüzgârda hafifçe dalgalanır
-      y += (1 - a) * 0.025 * Math.sin(wave + i * 0.35 + strand.phase);
+      const s = i / (HELIO_POINTS - 1);
+      let x = 0;
+      let y = 0;
+      let z = 0;
+      if (a < 1) {
+        const r = Math.max(SUN_R * 1.02, sunHead - sunTrail * (1 - s)) * sunZoom;
+        x = (d[0] * r + BUBBLE_SHIFT[0] * pulledBack) * (1 - a);
+        y = (d[1] * r + BUBBLE_SHIFT[1] * pulledBack) * (1 - a);
+        z = d[2] * r * (1 - a);
+      }
+      if (a > 0 && b < 1) {
+        const seen = bubbleStrandPoint(strand, s, time, bubbleSize);
+        x += bubblePoint[0] * a;
+        y += bubblePoint[1] * a;
+        z += bubblePoint[2] * a;
+        if (i === HELIO_POINTS - 1) visible = sunVisible * (1 - a) + seen * a;
+      } else if (i === HELIO_POINTS - 1) {
+        visible = sunVisible;
+      }
+      if (b > 0) {
+        const o = i * 3;
+        x += (strand.letter[o] - x) * b;
+        y += (strand.letter[o + 1] - y) * b;
+        z += (strand.letter[o + 2] - z) * b;
+      }
 
-      // Döndür, sonra perspektifle ekrana yansıt
-      const x1 = x * cosY - z * sinY;
-      const z1 = x * sinY + z * cosY;
-      const y1 = y * cosX - z1 * sinX;
-      const z2 = y * sinX + z1 * cosX;
-      const scale = 2.8 / (2.8 - z2);
-      helioScreen[i * 2] = cx + x1 * scale * unit;
-      helioScreen[i * 2 + 1] = cy + y1 * scale * unit;
-      depthSum += z2;
+      // Perspektifle ekrana yansıt
+      const scale = 2.8 / (2.8 - Math.min(z, 1.6));
+      helioScreen[i * 2] = cx + x * scale * unit;
+      helioScreen[i * 2 + 1] = cy + y * scale * unit;
+      depthSum += z;
     }
 
-    const level = clamp(Math.floor((depthSum / HELIO_POINTS + 0.6) / 1.2 * HELIO_LEVELS), 0, HELIO_LEVELS - 1);
-    const path = paths[level];
+    visible = visible * (1 - b) + b;
+    if (visible < 0.04) continue;
+    const near = clamp((depthSum / HELIO_POINTS + 0.6) / 1.2, 0, 1);
+    const level = clamp(Math.floor((0.3 + 0.7 * near) * visible * HELIO_LEVELS), 0, HELIO_LEVELS - 1);
+    // H harfi eskisi gibi tek renk (gümüş) olsun
+    const path = paths[b > 0.5 ? WIND : strand.role][level];
     path.moveTo(helioScreen[0], helioScreen[1]);
     for (let i = 1; i < HELIO_POINTS; i++) path.lineTo(helioScreen[i * 2], helioScreen[i * 2 + 1]);
-    const last = (HELIO_POINTS - 1) * 2;
-    tips.rect(helioScreen[last] - tipSize, helioScreen[last + 1] - tipSize, tipSize * 2, tipSize * 2);
+    if (strand.role === WIND && visible > 0.3) {
+      const last = (HELIO_POINTS - 1) * 2;
+      tips.rect(helioScreen[last] - tipSize, helioScreen[last + 1] - tipSize, tipSize * 2, tipSize * 2);
+    }
   }
 
-  helioCtx.lineWidth = Math.max(1, w / 1400);
-  for (let level = 0; level < HELIO_LEVELS; level++) {
-    helioCtx.strokeStyle = `rgba(214, 220, 232, ${0.08 + (0.22 * level) / (HELIO_LEVELS - 1)})`;
-    helioCtx.stroke(paths[level]);
-  }
-  helioCtx.fillStyle = 'rgba(255, 196, 120, 0.85)';
+  helioCtx.lineWidth = line;
+  HELIO_COLORS.forEach(([r, g, bl, dim, bright], role) => {
+    for (let level = 0; level < HELIO_LEVELS; level++) {
+      helioCtx.strokeStyle = `rgba(${r}, ${g}, ${bl}, ${dim + ((bright - dim) * level) / (HELIO_LEVELS - 1)})`;
+      helioCtx.stroke(paths[role][level]);
+    }
+  });
+  helioCtx.fillStyle = 'rgba(255, 200, 130, 0.85)';
   helioCtx.fill(tips);
+
+  // 2. adım: sonlanma şoku, Güneş'in çevresinde iki ince halka
+  if (bubbleWeight > 0.01) {
+    const r = SHOCK_R * bubbleSize * unit;
+    const sx = sunX + axis[0] * r * 0.12;
+    const sy = sunY + axis[1] * r * 0.12;
+    helioCtx.lineWidth = line * 1.2;
+    helioCtx.strokeStyle = `rgba(232, 236, 246, ${0.3 * bubbleWeight})`;
+    helioCtx.beginPath();
+    helioCtx.arc(sx, sy, r, 0, Math.PI * 2);
+    helioCtx.stroke();
+    helioCtx.strokeStyle = `rgba(232, 236, 246, ${0.12 * bubbleWeight})`;
+    helioCtx.beginPath();
+    helioCtx.arc(sx, sy, r * 1.22, 0, Math.PI * 2);
+    helioCtx.stroke();
+  }
   helioCtx.globalCompositeOperation = 'source-over';
+
+  // 1. adım: Güneş'in kendisi, izlerin önünde; geçişte küçülüp kaybolur. Yüzeyi çok yavaş döner
+  if (sunWeight > 0.01) {
+    if (!sunTexture) sunTexture = makeSunTexture();
+    const r = SUN_R * sunZoom * unit;
+    helioCtx.save();
+    helioCtx.globalAlpha = sunWeight ** 0.7;
+    helioCtx.translate(sunX, sunY);
+    helioCtx.rotate(time * 0.00002);
+    helioCtx.drawImage(sunTexture, -r, -r, r * 2, r * 2);
+    helioCtx.restore();
+  }
 }
 
 // Yalnızca bölüm ekrandayken canlandır

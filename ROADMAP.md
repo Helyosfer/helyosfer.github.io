@@ -32,7 +32,7 @@ Tek sayfalık, siyah ve sade ("premium") bir portfolyo. Kaydırdıkça sahne sah
 | # | Bölüm | Ne var | Geçiş |
 |---|---|---|---|
 | – | Giriş | Dev "Helyosfer" başlığı, motto, iki düğme | Başlık büyüyerek kaybolur |
-| – | Heliosfer nedir? | Canvas'ta ~640 tel (telefonda 300): Güneş rüzgârı → heliosfer → H. Üç kısa yazı | Teller kaydırdıkça demetten ortası parlayan küreye, oradan sitenin simgesindeki H'ye dönüşür; hareket azaltılınca küre durur, yazılar alt alta |
+| – | Helyosfer nedir? | Canvas'ta ~640 tel (telefonda 300): Güneş rüzgârı → helyosfer → H. Üç kısa yazı. NASA'nın "Heliopause Cycle" videosu örnek alındı | Önce dokulu Güneş ve her yöne fırlayan parçacıklar (yanda hilal gezegen); kamera geri çekilir, Güneş noktaya iner, kuyruklu kabarcık açılır (sonlanma şoku halkaları, kuyruğa akan parçacıklar, nefes alan helyopoz); sonra teller sitenin simgesindeki H'ye dönüşür. Hareket azaltılınca helyosfer durur, yazılar alt alta |
 | 01 | Hakkımda | "Matematikçi. Yazılım geliştirici." | Kelimeler tek tek yanar |
 | 02 | İlham | Gauss, Galileo, Cantor, Hardy, Hilbert sözleri | Dev tırnak işaretinin içinden girilir; sözler sırayla değişir |
 | 03 | Matematik | Yetenekler + Navier–Stokes girdabı (Burgers girdabı) | Başlık yazılırken `y = x²` parabolü teğetiyle çizilir |

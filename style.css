@@ -266,7 +266,7 @@ h1 {
 .btn-ghost:hover { border-color: var(--text); }
 
 /* ---------- Helyosfer sahnesi ----------
-   Teller script.js'te çizilir. Zaman çizelgesi (--p): 0–0.30 demet · 0.30–0.64 küre · 0.64–1 H.
+   Teller script.js'te çizilir. Zaman çizelgesi (--p): 0–0.30 Güneş · 0.30–0.64 helyosfer kabarcığı · 0.64–1 H.
    Her yazı kendi diliminde görünür (--from, --to); geçişler kısa sürer. */
 .helio-pin { height: 420vh; }
 .helio-canvas { position: absolute; top: 0; right: 0; width: 64%; height: 100%; }
