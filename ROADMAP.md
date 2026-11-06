@@ -1,6 +1,6 @@
 # helyosfer.me — Yol Haritası
 
-Son güncelleme: 30 Ekim 2026
+Son güncelleme: 6 Kasım 2026
 
 Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir oturumda
 önce bunu oku, sonra "Sıradaki işler" bölümünden devam et.
@@ -11,7 +11,7 @@ Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir
 - **Repo:** https://github.com/Helyosfer/helyosfer.github.io — `main` dalına gönderilen her şey 1-2 dakikada yayına girer
 - **Bilgisayardaki kopya:** `Belgeler\Helyosfer\helyosfer.github.io` (OneDrive içinde). Çalışılan tek kopya bu; kullanıcı da dosyaları burada elle düzenliyor, o yüzden işe başlamadan önce `git status` ve `git pull` ile bak.
 - **Yerelde açmak:** repo klasöründe `py -m http.server 5500`, sonra `http://localhost:5500`
-- **Dosyalar:** `index.html` (içerik), `style.css` (görünüm), `script.js` (animasyonlar), `ortak.js` (temel kod: dil, harf bölme, kaydırma çubuğu, menü; `script.js`'ten önce yüklenir), `favicon.svg` (sekme simgesi), `CNAME` (alan adı; silme)
+- **Dosyalar:** `index.html` (içerik), `style.css` (görünüm), `script.js` (animasyonlar), `ortak.js` (ortak kod: çerçeve koruması, dil, metin bölme, kaydırma çubuğu, menü; `script.js`'ten önce yüklenir), `favicon.svg` (sekme simgesi), `CNAME` (alan adı; silme)
 - **Performans kuralı:** kaydırmada sık değişen CSS değişkenlerini kök öğeye (`<html>`) değil, onu kullanan öğeye yaz; kökte bütün sayfanın stili her karede yeniden hesaplanır (ana sayfada 12,5 ms/kare ölçüldü).
 - **Erişilebilirlik kuralı (30 Ekim):** `denetim/erisilebilirlik/` içindeki testler (`npm test`, Pa11y, Lighthouse) her değişiklikte yeşil kalmalı; 5 kırılım noktası (320, 375, 768, 1024, 1440), kısa telefon ekranı, %200 yazı ve klavye gezintisi denetlenir. Yeni bir `aria-label` eklenirse İngilizcesi `data-en-label`'a yazılır. Izgara sütunları `minmax(0, 1fr)` olmalı (`1fr` uzun kelimede sayfayı yana taşırır).
 - **DNS:** Cloudflare'de; DNS değişiklikleri Cloudflare panelinden yapılır. Ayrıntılar (kayıtlar, sunucu) yerel `ROADMAP-ozel.md` dosyasında, depoya girmez.
@@ -21,6 +21,7 @@ Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir
 - Commit'ler yalnızca Helyosfer adına atılır; **Claude co-author olarak eklenmez**.
 - Her görünen metin iki dillidir: Türkçesi etiketin içinde, İngilizcesi `data-en="..."` içinde. Birini değiştirince diğerini de değiştir.
 - Kullanıcının kolayca değiştirebileceği yerler dosyalarda `DÜZENLE` notuyla işaretli.
+- Kod yorumları kısa ve yalın Türkçeyle yazılır; kod değişince yorumu da güncelle (6 Kasım'da bütün yorumlar bu kurala göre elden geçirildi).
 - Değişiklikten sonra hem masaüstünde hem telefon boyutunda (375×812) bak.
 - Yerel sunucu CSS/JS'yi önbellekten verebilir; değişiklik görünmüyorsa sert yenile (`Ctrl + F5`).
 - Sayfada `<meta>` ile bir Content-Security-Policy var (15 Ekim): betikler yalnızca siteden ve sabitlenmiş KaTeX adresinden, stiller siteden, KaTeX'ten ve Google Fonts'tan yüklenebilir; KaTeX dosyalarında SRI (`integrity`) hash'i var. Yeni bir dış kaynak (betik, yazı tipi, görsel) eklenirse CSP'ye de eklenmeli, yoksa tarayıcı engeller. KaTeX sürümü değişirse hash'ler de değişmeli.
