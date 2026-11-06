@@ -1,3 +1,3 @@
-# GitHub Pages (Jekyll) ayarı: denetim araçları sitede dosya olarak yayınlanmasın.
+# GitHub Pages (Jekyll) ayarı: denetim klasörü sitede yayınlanmasın.
 exclude:
   - denetim

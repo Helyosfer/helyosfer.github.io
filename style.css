@@ -1,5 +1,5 @@
 /* ---------- Renkler ve temel değişkenler ---------- */
-/* DÜZENLE: --accent sitedeki tek vurgu rengi; az kullanılır. */
+/* DÜZENLE: --accent sitenin tek vurgu rengi; idareli kullan. */
 :root {
   --bg: #000000;
   --surface: #0d0d0f;
@@ -30,7 +30,7 @@ body {
 }
 
 /* ---------- Arka planda kayan formüller ---------- */
-/* DÜZENLE: --formula-color ile görünürlüğü artırıp azaltabilirsin */
+/* DÜZENLE: Formüllerin ne kadar belirgin olacağını --formula-color belirler */
 .formulas {
   --formula-color: rgba(255, 255, 255, 0.2);
   position: fixed;
@@ -42,13 +42,13 @@ body {
   padding: 72px 0 24px;
   overflow: hidden;
   pointer-events: none;
-  /* Binlerce KaTeX düğümü: içerideki değişiklik sayfanın geri kalanının stil/düzen hesabına taşmasın */
+  /* Burada binlerce KaTeX öğesi var; içerideki bir değişiklik sayfanın geri kalanını yeniden hesaplatmasın */
   contain: strict;
-  /* Kenarlarda yumuşakça kaybolsun */
+  /* Formüller kenarlara doğru yavaşça kaybolur */
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
-  /* KaTeX yazı tipleri yüklenene kadar gizli: yoksa formüller yer değiştirir (yerleşim kayması 0,16 idi).
-     script.js yazı tipleri hazır olunca .ready ekler. */
+  /* KaTeX yazı tipleri yüklenene kadar gizli; yoksa formüller yüklenince yerinden oynar (yerleşim kayması 0,16
+     ölçülmüştü). Yazı tipleri hazır olunca script.js .ready sınıfını ekler. */
   visibility: hidden;
   opacity: 0;
   transition: opacity 0.8s;
@@ -68,7 +68,7 @@ body {
 .formula-row:nth-child(even) { animation-direction: reverse; }
 .formula-row > .formula { padding-right: 5.5rem; }
 
-/* Her satırın içeriği iki kez yazılı; yarısı kadar kayınca döngü dikişsiz başa sarar */
+/* Her satırda içerik iki kez yazılı; satır yarısı kadar kayınca başa döner ve bu an fark edilmez */
 @keyframes formula-drift { to { transform: translateX(-50%); } }
 
 @media (prefers-reduced-motion: reduce) {
@@ -76,6 +76,7 @@ body {
   .formulas { transition: none; }
 }
 
+/* Sayfanın üstündeki ince kaydırma çubuğu (--scroll'u ortak.js yazar) */
 .progress {
   position: fixed;
   top: 0;
@@ -89,7 +90,7 @@ body {
 }
 
 h1, h2, h3 { line-height: 1.05; margin: 0; letter-spacing: -0.04em; }
-/* Büyük yazı ayarında ("Matematikçi.", "çalıştıklarım" gibi) tek başına satırdan uzun kelimeler bölünsün, sayfa yana taşmasın */
+/* Büyük yazı ayarında satıra tek başına sığmayan kelimeler ("Matematikçi.", "çalıştıklarım" gibi) bölünsün; sayfa yana taşmasın */
 h1, h2, h3, .statement, .quote blockquote { overflow-wrap: anywhere; }
 h2 { font-size: clamp(2.6rem, 7vw, 5rem); font-weight: 700; margin-bottom: 2rem; }
 p { margin: 0 0 1rem; }
@@ -98,10 +99,10 @@ a { color: inherit; }
 
 .container { width: 100%; max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
 
-/* Ekran okuyucuya söylenen ama görünmeyen metin */
+/* Ekranda görünmeyen ama ekran okuyucunun okuduğu metin */
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
-/* Klavyeyle ilk Tab'da görünen "İçeriğe geç" bağlantısı: menüyü atlayıp doğrudan içeriğe gider */
+/* "İçeriğe geç" bağlantısı: klavyede ilk Tab'a basınca görünür, menüyü atlayıp doğrudan içeriğe götürür */
 .skip-link {
   position: fixed;
   top: 10px;
@@ -117,16 +118,16 @@ a { color: inherit; }
 }
 .skip-link:focus { transform: none; }
 
-/* Kayan kartlar ekrana girerken sayfayı yana itmesin (tablette parmakla yana kaydırılabiliyordu).
-   clip, hidden'dan farklı olarak kaydırma alanı oluşturmaz; sabitlenen sahneler (sticky) bozulmaz. */
+/* Yandan kayarak gelen kartlar sayfayı yana taşırmasın (tablette sayfa parmakla yana kayabiliyordu).
+   clip, hidden'ın aksine kaydırma alanı oluşturmaz; bu yüzden sabitlenen (sticky) sahneler bozulmaz. */
 main { overflow-x: clip; }
 
-/* Klavyeyle gelinen öğe animasyonun yarısında (soluk, eğik) kalmasın; ekranın en altına da yapışmasın */
+/* Klavyeyle odaklanılan öğe animasyonun ortasında (soluk ya da eğik) kalmasın; ekranın en altına da yapışmasın */
 [data-enter]:focus-within { --e: 1 !important; }
 .hero-content:focus-within { opacity: 1; transform: none; }
 a, button { scroll-margin: 72px 0 25vh; }
 
-/* h2 olan etiketler (Hakkımda, İlham) de aynı küçük görünsün */
+/* Bölümlerin küçük üst etiketleri. h2 olanlar (Hakkımda, İlham) da diğerleri kadar küçük görünür. */
 .kicker { font-size: 0.95rem; font-weight: 500; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.5; letter-spacing: normal; }
 .num { font-family: var(--mono); font-size: 0.85rem; color: var(--accent); margin-right: 10px; }
 
@@ -148,7 +149,7 @@ a, button { scroll-margin: 72px 0 25vh; }
 .logo { font-weight: 600; letter-spacing: -0.02em; text-decoration: none; }
 
 .nav-links { display: flex; align-items: center; gap: 32px; }
-/* Dikey iç boşluk görünüşü değiştirmez, dokunma alanını büyütür */
+/* Dikey iç boşluk görünümü değiştirmez, yalnızca dokunma alanını büyütür */
 .nav-links a { padding: 6px 0; text-decoration: none; color: var(--muted); font-size: 0.82rem; transition: color 0.2s; }
 .nav-links a:hover { color: var(--text); }
 .nav-links .nav-cta { padding: 5px 14px; border-radius: 999px; background: var(--text); color: #000; font-weight: 500; }
@@ -173,8 +174,9 @@ a, button { scroll-margin: 72px 0 25vh; }
 .nav-toggle span { width: 20px; height: 1.5px; background: var(--text); }
 
 /* ---------- Kaydırmaya bağlı sahneler ----------
-   script.js her [data-pin] bölümüne 0→1 arası --p (ilerleme) değeri yazar.
-   Bölüm ekrandan uzun olduğu için içerik ekranda sabit kalır ve --p ile canlanır. */
+   script.js her [data-pin] bölümüne ilerleme değeri --p'yi (0 → 1) yazar.
+   Bölüm ekrandan uzun olduğu için içerik kaydırırken yerinde durur ve --p'ye göre canlanır.
+   Varsayılan --p: 1; JavaScript çalışmazsa ya da hareket azaltılmışsa sahneler son hâlinde görünür. */
 .pin { position: relative; height: 240vh; --p: 1; }
 .pin-inner {
   position: sticky;
@@ -185,15 +187,16 @@ a, button { scroll-margin: 72px 0 25vh; }
   overflow: hidden;
 }
 
-/* Sırayla beliren öğeler: --i sıra numarası, --n toplam sayı (script.js yazar) */
+/* Sırayla beliren öğeler: --i sıra numarası, --n toplam öğe sayısı (script.js ve ortak.js yazar) */
 [data-stagger] > *, .word {
   --t: clamp(0, calc(var(--p) * var(--n) * 1.4 - var(--i)), 1);
 }
 
-/* Ekrana girerken oynayan öğeler: --e 0→1 (script.js yazar) */
+/* Ekrana girerken canlanan öğeler: --e 0 → 1 (script.js yazar). Varsayılanı 1, yani son hâli. */
 [data-enter] { --e: 1; }
 
 /* ---------- Giriş ---------- */
+/* Kaydırdıkça başlık büyüyüp kaybolur. Sabitlenmediğinde giriş, ilk görünümünde (--p: 0) kalır. */
 .hero { height: 180vh; --p: 0; }
 
 /* Başlığın arkasında çok hafif bir ışık */
@@ -266,8 +269,8 @@ h1 {
 .btn-ghost:hover { border-color: var(--text); }
 
 /* ---------- Helyosfer sahnesi ----------
-   Teller script.js'te çizilir. Zaman çizelgesi (--p): 0–0.30 Güneş · 0.30–0.64 helyosfer kabarcığı · 0.64–1 H.
-   Her yazı kendi diliminde görünür (--from, --to); geçişler kısa sürer. */
+   Teller script.js'te çizilir. Sıra (--p): 0–0.30 Güneş · 0.30–0.64 helyosfer kabarcığı · 0.64–1 H.
+   Her yazı yalnızca kendi aralığında (--from, --to) görünür; yazılar arası geçiş kısa sürer. */
 .helio-pin { height: 420vh; }
 .helio-canvas { position: absolute; top: 0; right: 0; width: 64%; height: 100%; }
 .helio-text { position: relative; }
@@ -298,6 +301,7 @@ h1 {
 .helio-steps p { margin: 0; max-width: 30ch; font-size: clamp(1.05rem, 1.6vw, 1.25rem); line-height: 1.55; color: var(--muted); }
 
 /* ---------- Hakkımda ---------- */
+/* Kaydırdıkça kelimeler soluktan parlağa tek tek yanar; vurgulu kelimeler (.hl) vurgu rengini alır */
 .statement-pin { height: 220vh; }
 
 .statement {
@@ -315,7 +319,7 @@ h1 {
 
 .quotes { position: relative; height: 52vh; }
 
-/* Sahneye dev bir tırnak işaretinin içinden girilir; sonra köşede soluk bir iz olarak kalır */
+/* Sahneye dev bir tırnak işaretinin içinden girilir; tırnak sonra köşede soluk bir iz olarak kalır */
 .quotes-pin .pin-inner::before {
   --in: clamp(0, calc(var(--p) * 9), 1);
   content: "\201C";
@@ -330,7 +334,7 @@ h1 {
   pointer-events: none;
 }
 
-/* Her söz kendi kaydırma diliminde (--q: 0→1) belirir, yükselir ve kaybolur */
+/* Her söz kendi kaydırma aralığında (--q: 0 → 1) belirir, yukarı kayar ve kaybolur */
 .quote {
   --q: calc(var(--p) * var(--n) - var(--i));
   position: absolute;
@@ -342,7 +346,7 @@ h1 {
   opacity: clamp(0, min(var(--q) * 4, (1 - var(--q)) * 4), 1);
   transform: translateY(calc((0.5 - var(--q)) * 90px));
 }
-/* İlk söz bölüm başlarken, son söz bölüm biterken görünür kalsın */
+/* İlk söz bölümün başında, son söz bölümün sonunda görünür kalsın */
 .quote:first-child { opacity: clamp(0, (1 - var(--q)) * 4, 1); }
 .quote:last-child { opacity: clamp(0, var(--q) * 4, 1); }
 
@@ -363,19 +367,20 @@ h1 {
 .quote figcaption::before { content: "— "; color: var(--accent); }
 
 /* ---------- Yetenekler ---------- */
-/* minmax(0, 1fr): sütun, içindeki uzun bir kelime ya da kod satırı yüzünden ekrandan genişlemesin */
+/* İki sütunlu düzen. minmax(0, 1fr): uzun bir kelime ya da kod satırı sütunu genişletip ekrandan taşırmasın. */
 .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; }
 
 .skills { display: flex; flex-wrap: wrap; gap: 10px; }
-/* Harf harf yazılan başlıklar: bölümün ilk çeyreğinde tamamlanır */
-/* Kelime satıra sığarsa bütün kalır; satırdan uzunsa (büyük yazı ayarı) harflerinden bölünür */
+/* Kelime satıra sığarsa bütün kalır; sığmazsa (büyük yazı ayarı) harflerinden bölünür */
 .char-word { display: inline-block; max-width: 100%; }
+/* Harf harf yazılan başlıklar: yazım, bölümün yaklaşık ilk dörtte birinde biter */
 .char {
   --c: clamp(0, calc(var(--p) * 3.6 * var(--n) - var(--i)), 1);
   display: inline-block;
   opacity: var(--c);
   transform: translateY(calc((1 - var(--c)) * 0.25em));
 }
+/* Yazılan başlığın sonunda yanıp sönen imleç */
 .typed::after {
   content: "_";
   margin-left: 0.04em;
@@ -384,7 +389,8 @@ h1 {
 }
 @keyframes caret { 50% { opacity: 0; } }
 
-/* Matematik bölümü: ilk --intro kadarı parabol sahnesi, kalanı (--q: 0→1) yetenekler ve girdap */
+/* Matematik bölümü: ilk --intro kadarı parabole, kalanı (--q: 0 → 1) yeteneklere ve girdaba ayrılır.
+   --intro, script.js'teki MATH_INTRO ile aynı olmalı. */
 .math-pin { height: 340vh; --intro: 0.38; }
 .math-pin .pin-inner { --q: clamp(0, calc((var(--p) - var(--intro)) / (1 - var(--intro))), 1); }
 .math-pin [data-stagger] > * { --t: clamp(0, calc(var(--q) * var(--n) * 1.4 - var(--i)), 1); }
@@ -400,7 +406,7 @@ h1 {
   height: 84vh;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  /* Parabol tamamlanınca solar ve sahneyi girdaba bırakır */
+  /* Parabol bölümü bitince solar ve yerini girdaba bırakır */
   opacity: clamp(0, calc((var(--intro) + 0.06 - var(--p)) * 10), 1);
 }
 .parabola-axes { fill: none; stroke: rgba(255, 255, 255, 0.28); stroke-width: 0.012; opacity: clamp(0, calc(var(--p) * 14), 1); }
@@ -434,7 +440,7 @@ h1 {
 .flow-stage { position: relative; width: min(100%, 500px); margin: 0 auto; }
 .flow canvas { display: block; width: 100%; aspect-ratio: 1 / 1.05; }
 
-/* Girdap büyük ölçüde çizildikten sonra beliren etiketler */
+/* Girdabın etiketleri: girdap büyük ölçüde çizildikten sonra belirir */
 .flow-label {
   position: absolute;
   font-size: 0.8rem;
@@ -447,9 +453,10 @@ h1 {
 .flow figcaption { margin-top: 12px; font-size: 0.8rem; color: var(--muted); }
 .flow-equation { display: block; margin-bottom: 6px; font-family: var(--mono); font-size: 0.9rem; color: var(--text); }
 
-/* Projeler başlığı ekrana girerken harf harf yazılır */
+/* Projeler ve İletişim başlıkları ekrana girerken harf harf yazılır */
 .rise .char { --c: clamp(0, calc(var(--e) * 1.25 * var(--n) - var(--i)), 1); }
 
+/* Yazılım bölümündeki kod penceresi: kaydırdıkça yandan düzleşir, satırları sırayla yazılır */
 .terminal {
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -485,7 +492,7 @@ h1 {
 }
 .card:hover { border-color: rgba(255, 255, 255, 0.3); }
 
-/* Başlığın altında soldan sağa çizilen ince çizgi */
+/* Başlığın altında soldan sağa uzayan ince çizgi */
 .rule {
   display: block;
   height: 1px;
@@ -495,7 +502,7 @@ h1 {
   transform-origin: left;
 }
 
-/* Kartlar eğik durumdan açılırken ilki soldan, ikincisi sağdan yerine kayar (--from) */
+/* Kartlar eğik hâlden doğrulurken soldaki sütun soldan, sağdaki sağdan kayarak yerine gelir (--from) */
 .tilt {
   opacity: var(--e);
   transform:
@@ -514,20 +521,19 @@ h1 {
 .card-body p { color: var(--muted); margin: 0; font-size: 1.05rem; }
 .card-kicker { font-size: 0.85rem !important; font-weight: 500; color: var(--accent) !important; }
 .card-link { margin-top: 10px; font-weight: 500; text-decoration: none; }
-/* Bir kartta birden fazla bağlantı varsa yan yana durur, sığmazsa alt satıra geçer */
+/* Bir kartta birden çok bağlantı varsa yan yana durur; sığmazsa alt satıra geçer */
 .card-links { display: flex; flex-wrap: wrap; gap: 4px 28px; }
 .card-link .arrow { display: inline-block; transition: transform 0.2s; }
 .card-link:hover .arrow { transform: translateX(4px); }
 
 .card-more { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 32px; text-align: center; text-decoration: none; font-weight: 600; }
 .card-more-symbol { width: 56px; height: 56px; margin-bottom: 10px; fill: none; stroke: url(#sigma-gradient); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-/* Başlığın altında tek satır: "GitHub › & Codeberg ›", proje kartlarındaki bağlantılarla aynı stilde */
+/* "Tüm projeler" başlığının altında tek satır: "GitHub › & Codeberg ›". Proje kartlarındaki bağlantılarla aynı stilde. */
 .card-more-title { font-size: 1.1rem; }
 .card-more-hosts { display: flex; align-items: baseline; gap: 14px; margin: 6px 0 0; }
 .card-more-hosts .card-link { margin-top: 0; }
 .card-more-hosts .amp { color: var(--muted); font-weight: 400; }
 
-/* ---------- Kapanış ---------- */
 /* ---------- İletişim ---------- */
 .contact { padding-bottom: 80px; }
 .contact-text { max-width: 30rem; font-size: clamp(1.05rem, 2vw, 1.3rem); color: var(--muted); margin-bottom: 1.5rem; }
@@ -546,18 +552,19 @@ h1 {
   transition: border-color 0.2s;
 }
 .contact-mail:hover { border-color: var(--accent); }
-/* Adres, ekrana girerken klavyeden yazılıyormuş gibi harf harf belirir; sonunda imleç yanıp söner */
+/* E-posta adresi ekrana girerken klavyeyle yazılıyormuş gibi harf harf belirir; sonunda imleç yanıp söner */
 .contact-mail .char { --c: clamp(0, calc(var(--e) * 1.2 * var(--n) - var(--i)), 1); transform: none; }
 .contact-mail::after {
   content: "_";
   color: var(--accent);
   animation: caret 1s steps(1) infinite;
 }
-/* Hareket azaltılınca yanıp sönen imleçler durur (WCAG 2.2.2); imleç kurallarından sonra gelmeli */
+/* Hareket azaltılınca yanıp sönen imleçler durur (WCAG 2.2.2). Bu kural, imleç kurallarından sonra gelmeli. */
 @media (prefers-reduced-motion: reduce) {
   .typed::after, .contact-mail::after { animation: none; }
 }
 
+/* ---------- Kapanış ---------- */
 .outro { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
 .zoom { opacity: var(--e); transform: scale(calc(0.6 + var(--e) * 0.4)); }
 .outro-title {
@@ -570,7 +577,7 @@ h1 {
   color: transparent;
 }
 .outro-sub { font-size: clamp(1rem, 2.2vw, 1.4rem); color: var(--muted); margin-bottom: 2.25rem; }
-/* GitHub ve Codeberg düğmeleri yan yana, sığmazsa alt alta */
+/* GitHub ve Codeberg düğmeleri yan yana durur; sığmazsa alt alta geçer */
 .outro-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
 
 /* ---------- Alt bilgi ---------- */
@@ -581,20 +588,22 @@ h1 {
 .site-footer a { padding: 4px 0; text-decoration: none; }
 .site-footer a:hover { color: var(--text); }
 
-/* ---------- Hareket azaltma tercihi ya da kısa ekran (ör. yatay telefon; adres çubuğu yüzünden görünen alanı
-   ~580 px kalan 360×640 Android ya da iPhone mini): sahneler sabitlenmez, her şey normal akışta ve görünür.
-   Dar ekranda Matematik ve Yazılım sahneleri 680 px'ten kısa alana sığmıyordu (başlık ve terminal kesiliyordu).
-   script.js bölüm yüksekliğine bakarak buna kendiliğinden uyar. ---------- */
+/* ---------- Hareket azaltma tercihi ya da kısa ekran ----------
+   Kısa ekran: ör. yatay telefon ya da adres çubuğu yüzünden görünen alanı ~580 px'e inen 360×640 Android ve
+   iPhone mini. Bu durumda sahneler sabitlenmez; her şey normal akışta ve görünür durur. Dar ekranda Matematik ve
+   Yazılım sahneleri 680 px'ten kısa alana sığmıyordu (başlık ve kod penceresi kesiliyordu).
+   script.js bölüm yüksekliğine bakarak buna kendiliğinden uyar. */
 @media (prefers-reduced-motion: reduce), (max-height: 560px), (max-width: 760px) and (max-height: 680px) {
   html { scroll-behavior: auto; }
   .pin, .hero, .statement-pin, .quotes-pin { height: auto; }
-  /* relative: sabitlenmez ama içindeki mutlak konumlu süsleri (giriş ışıltısı, parabol) kendi sınırında keser */
+  /* relative: kutu sabitlenmez; içindeki mutlak konumlu süsler (giriş ışıltısı, parabol) yine bu kutuya göre yerleşir
+     ve dışına taşmaz */
   .pin-inner { position: relative; height: auto; min-height: 70vh; padding: 96px 0; }
   .quotes { height: auto; display: grid; gap: 64px; }
   .quote, .quote:first-child, .quote:last-child { position: static; opacity: 1; transform: none; }
   .quotes-pin .pin-inner::before { display: none; }
   .scroll-hint { display: none; }
-  /* Helyosfer: küre üstte, üç yazı altında alt alta */
+  /* Helyosfer: çizim üstte, üç yazı altında alt alta */
   .helio-pin { height: auto; }
   .helio-pin .pin-inner { flex-direction: column; align-items: stretch; }
   .helio-canvas { position: relative; width: 100%; height: min(64vh, 520px); }
@@ -625,12 +634,12 @@ h1 {
   .nav-links a { font-size: 1rem; }
 
   .split { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-  /* Kod satırları yana kaymaz, alt satıra geçer: klavyeyle kaydırmak gerekmez, odak ekran dışına gitmez */
+  /* Uzun kod satırları yana kaymaz, alt satıra geçer: klavyeyle yana kaydırmak gerekmez, odak ekran dışına çıkmaz */
   .code { white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: visible; }
   .split-reverse > :first-child { order: 2; }
-  /* Dar ekranda yazılar formüllerin tam üstüne düşer; okunaklı kalsın diye formüller kısılır */
+  /* Dar ekranda yazılar formüllerin tam üstüne düşer; yazılar okunaklı kalsın diye formüller soluklaşır */
   .formulas { --formula-color: rgba(255, 255, 255, 0.11); }
-  /* Kartlar alt alta dizildiği için yandan kayma ekran dışına taşardı; yalnızca eğilerek açılsınlar */
+  /* Kartlar alt alta dizildiği için yandan kayarak gelmeleri ekrandan taşardı; yalnızca eğik hâlden doğrulurlar */
   .projects .card:nth-child(n) { --from: 0; }
   .rule { margin: -0.35rem 0 1.5rem; }
   .flow-stage { width: min(62vw, 270px); }
@@ -643,8 +652,8 @@ h1 {
   .section { padding-top: 96px; }
 }
 
-/* Telefonda sabitlenen Helyosfer sahnesi: teller ekranın üstünde, yazı altta
-   (sabitlenmeyen hâl yukarıdaki hareket azaltma / kısa ekran kuralında) */
+/* Telefonda sabitlenen Helyosfer sahnesi: çizim ekranın üstünde, yazı altta.
+   (Sabitlenmediği hâl, yukarıdaki hareket azaltma / kısa ekran kuralında.) */
 @media (max-width: 760px) and (min-height: 681px) and (prefers-reduced-motion: no-preference) {
   .helio-canvas { width: 100%; height: 60%; top: 40px; }
   .helio-pin .pin-inner { align-items: flex-end; padding-bottom: 40px; }

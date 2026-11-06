@@ -1,13 +1,14 @@
-// Modül 4 denetiminin kalıcı testleri: beş kırılım noktası, WCAG 2.2 AA (axe), klavye, büyük yazı.
-// Her test bir bulguya karşılık gelir (ERS-xx, denetim raporundaki numara).
+// Modül 4 denetiminden kalan kalıcı testler: beş ekran genişliği (kırılım noktası), WCAG 2.2 AA (axe), klavye
+// ve büyük yazı. Her test bir bulguya karşılık gelir; ERS-xx, bulgunun denetim raporundaki numarasıdır.
 import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 
 const SAYFALAR = [['ana sayfa', '/']];
-// 320: WCAG 1.4.10 yeniden akış sınırı · 375: telefon · 768: dikey tablet · 1024: yatay tablet/küçük dizüstü · 1440: masaüstü
+// 320: WCAG 1.4.10 yeniden akış sınırı · 375: telefon · 768: dikey tablet · 1024: yatay tablet ya da küçük dizüstü · 1440: masaüstü
 const KIRILIMLAR = [[320, 640], [375, 812], [768, 1024], [1024, 768], [1440, 900]];
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
+// Sayfayı yarım ekranlık adımlarla sonuna kadar kaydırır; her adımda (verildiyse) her(y) çağrılır
 async function sonunaKadarKaydir(page, her) {
   const yukseklik = await page.evaluate(() => document.documentElement.scrollHeight);
   const adim = (page.viewportSize().height) / 2;
@@ -24,7 +25,8 @@ for (const [ad, yol] of SAYFALAR) {
       test.use({ viewport: { width: w, height: h } });
 
       test('ERS-01 axe: WCAG 2.2 AA ihlali yok', async ({ browser }) => {
-        // Azaltılmış hareket: kaydırmaya bağlı öğeler son hâlinde durur, kontrast gerçek renkle ölçülür
+        // Hareket azaltılınca kaydırmaya bağlı öğeler son hâlinde durur; kontrast, yarı saydam ara renklerle değil
+        // gerçek renkle ölçülür
         const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' });
         const page = await ctx.newPage();
         await page.goto(yol);
@@ -45,7 +47,7 @@ for (const [ad, yol] of SAYFALAR) {
 }
 
 test.describe('ERS-03 kısa telefon ekranında sabitlenen sahneler kesilmez', () => {
-  // Gerçek telefonlarda adres çubuğu yüzünden görünen alan ekrandan kısadır (ör. 360×640 cihazda ~360×580)
+  // Gerçek telefonlarda adres çubuğu yüzünden görünen alan ekrandan kısadır (ör. 360×640 bir cihazda ~360×580)
   for (const [ad, yol] of SAYFALAR) for (const [w, h] of [[320, 568], [360, 580], [375, 635], [390, 664]]) {
     test(`${ad} ${w}x${h}`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: h });
@@ -54,12 +56,12 @@ test.describe('ERS-03 kısa telefon ekranında sabitlenen sahneler kesilmez', ()
         const out = [];
         for (const pin of document.querySelectorAll('[data-pin]')) {
           const inner = pin.querySelector('.pin-inner');
-          // Sahnenin sonu: bütün içerik görünür hâlde
+          // Sahnenin sonuna git: burada bütün içerik görünür olmalı
           window.scrollTo({ top: pin.getBoundingClientRect().top + scrollY + pin.offsetHeight - innerHeight - 2, behavior: 'instant' });
           await new Promise((r) => setTimeout(r, 120));
           const kutu = inner.getBoundingClientRect();
           for (const el of inner.querySelectorAll('h1, h2, p, li, a, figcaption, .terminal')) {
-            if (el.closest('.quote')) continue; // sözler sırayla kaybolur, bilerek
+            if (el.closest('.quote')) continue; // sözler bilerek sırayla kaybolur
             const b = el.getBoundingClientRect();
             if (b.height && (b.top < kutu.top - 1 || b.bottom > kutu.bottom + 1)) out.push(`${pin.id || pin.className}: "${el.textContent.trim().slice(0, 24)}"`);
           }
@@ -72,8 +74,8 @@ test.describe('ERS-03 kısa telefon ekranında sabitlenen sahneler kesilmez', ()
 });
 
 test.describe('ERS-04 yazı boyutu %200 olunca sayfa yana taşmaz', () => {
-  // Android'de "Yazı boyutu" ayarı bu durumu oluşturur. Masaüstünde tarayıcı yakınlaştırması kullanılır;
-  // o zaman sayfa zaten telefon düzenine geçer (320'de ERS-01/02 kapsar).
+  // Android'deki "Yazı boyutu" ayarı bu durumu yaratır. Masaüstünde ise tarayıcı yakınlaştırılır; sayfa o zaman
+  // zaten telefon düzenine geçer (bunu 320 genişlikte ERS-01/02 sınar).
   for (const [ad, yol] of SAYFALAR) {
     for (const [w, h] of [[375, 812]]) {
       test(`${ad} @${w}`, async ({ browser }) => {
@@ -97,7 +99,7 @@ test.describe('ERS-05 Tab ile odaklanan öğe tam görünür', () => {
       const sorunlu = [];
       for (let i = 0; i < 24; i++) {
         await page.keyboard.press('Tab');
-        // Yumuşak kaydırma bitsin: konum iki ölçümde aynı kalana kadar bekle
+        // Yumuşak kaydırmanın bitmesini bekle: konum art arda iki ölçümde aynı kalmalı
         for (let onceki = -1, i = 0; i < 40; i++) {
           await page.waitForTimeout(150);
           const y = await page.evaluate(() => scrollY);
@@ -110,7 +112,7 @@ test.describe('ERS-05 Tab ile odaklanan öğe tam görünür', () => {
           const b = el.getBoundingClientRect();
           let saydamlik = 1;
           for (let n = el; n && n.nodeType === 1; n = n.parentElement) saydamlik *= parseFloat(getComputedStyle(n).opacity);
-          // "İçeriğe geç" bağlantısı üst menünün de üstünde, sabit durur
+          // "İçeriğe geç" bağlantısı üst menünün de üstünde sabit durur; onun menünün altında kalması beklenmez
           const ust = el.classList.contains('skip-link') ? 0 : document.querySelector('.site-header').getBoundingClientRect().bottom;
           return { ad: (el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 24), saydamlik, gorunur: b.top >= ust - 1 && b.bottom <= innerHeight + 1, ust: Math.round(b.top) };
         });

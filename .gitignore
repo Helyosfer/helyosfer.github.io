@@ -1,5 +1,5 @@
 .claude/
 .env
 .env.*
-# Gizli değerler (eski Worker'ın yerel dosyası); depo herkese açık
+# Eski Worker'ın gizli değerlerini tutan yerel dosya. Depo herkese açık; bu dosya asla gönderilmemeli.
 .dev.vars

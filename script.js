@@ -1,4 +1,5 @@
-// Ana sayfa. Ortak kod (dil, harf bölme, kaydırma çubuğu, menü, çerçeve koruması) ortak.js'te; o bu dosyadan önce yüklenir.
+// Ana sayfanın kodu. Ortak parçalar (dil, metin bölme, kaydırma çubuğu, menü, çerçeve koruması) ortak.js'te;
+// o dosya bundan önce yüklenir.
 
 // ---------- Dil (TR / EN) ----------
 initLanguage({
@@ -7,8 +8,8 @@ initLanguage({
 });
 
 // ---------- Arka planda kayan formüller ----------
-// Kalkülüsün tanıdık formülleri, LaTeX ile yazılıp KaTeX ile dizilir
-// DÜZENLE: listeye yeni formül ekleyebilir, FORMULA_ROWS ile satır sayısını değiştirebilirsin
+// Kalkülüsten tanıdık formüller. LaTeX ile yazılır, KaTeX ile dizilir.
+// DÜZENLE: Listeye formül ekleyebilirsin. Satır sayısı FORMULA_ROWS'ta.
 const FORMULAS = [
   String.raw`\frac{d}{dx}\ln x = \frac{1}{x}`,
   String.raw`\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}`,
@@ -29,14 +30,15 @@ const FORMULAS = [
 ];
 const FORMULA_ROWS = 6;
 
-// KaTeX yüklenemediyse (ör. çevrimdışı) arka plan boş kalır, sayfa yine çalışır
+// KaTeX yüklenemezse (ör. çevrimdışı) arka plan boş kalır; sayfanın geri kalanı çalışır
 const formulaLayer = document.querySelector('.formulas');
 if (window.katex) {
   const rendered = FORMULAS.map((tex) =>
     `<span class="formula">${katex.renderToString(String.raw`\displaystyle ` + tex, { throwOnError: false })}</span>`
   );
-  // Satırın yarısı ekrandan geniş olduğu sürece döngü dikişsiz kalır. Bir formül en az ~200 px tuttuğu için dar ekranda
-  // daha az formül yeter (telefonda 16 yerine 6: arka plan ~%60 daha az DOM). Süre de orantılı kısalır ki hız aynı kalsın.
+  // Satırın yarısı ekrandan geniş olduğu sürece kayma kesintisiz görünür. Bir formül en az ~200 px tuttuğu için
+  // dar ekranda daha azı yeter: telefonda 16 yerine 6 formül, yani ~%60 daha az öğe. Süre de aynı oranda kısalır,
+  // böylece kayma hızı değişmez.
   const perRow = Math.min(rendered.length, Math.max(6, Math.ceil(window.innerWidth / 110)));
   for (let row = 0; row < FORMULA_ROWS; row++) {
     // Her satır listeye farklı bir yerden başlar ve farklı hızda kayar
@@ -48,13 +50,13 @@ if (window.katex) {
     line.innerHTML = half + half;
     formulaLayer.append(line);
   }
-  // Katman yazı tipleri yüklenince görünür (style.css → .formulas). Önce düzeni okumak yazı tiplerinin
-  // yüklenmesini başlatır; yoksa fonts.ready, yükleme başlamadan çözülebilirdi.
+  // Formüller, yazı tipleri yüklenince görünür (bkz. style.css → .formulas). offsetWidth'i okumak yazı tiplerinin
+  // yüklenmesini hemen başlatır; yoksa fonts.ready, yükleme daha başlamadan sonuçlanabilir.
   void formulaLayer.offsetWidth;
   document.fonts.ready.then(() => formulaLayer.classList.add('ready'));
 }
 
-// Sırayla belirecek öğelere sıra numarası ver
+// Sırayla belirecek öğelere sıra numarasını (--i) ve toplam sayıyı (--n) yaz
 document.querySelectorAll('[data-stagger]').forEach((group) => {
   const items = [...group.children];
   items.forEach((item, i) => {
@@ -64,10 +66,10 @@ document.querySelectorAll('[data-stagger]').forEach((group) => {
 });
 
 // ---------- Parabol sahnesi ----------
-// Matematik bölümünün ilk kısmında y = x² çizilir; üzerinde bir nokta teğetiyle birlikte ilerler.
-// DÜZENLE: MATH_INTRO, bölümün ne kadarının parabole ayrılacağını belirler (style.css içindeki --intro ile aynı olmalı)
+// Matematik bölümünün başında y = x² çizilir; eğrinin üzerinde bir nokta teğetiyle birlikte ilerler.
+// DÜZENLE: MATH_INTRO, bölümün ne kadarının parabole ayrıldığını belirler; style.css'teki --intro ile aynı olmalı.
 const MATH_INTRO = 0.38;
-const PARABOLA_DRAW = 0.3;
+const PARABOLA_DRAW = 0.3; // eğri, bölümün ilk %30'unda çizilir (style.css'teki 0.3 ile aynı)
 
 const parabolaCurve = document.querySelector('.parabola-curve');
 const parabolaDot = document.querySelector('.parabola-dot');
@@ -76,7 +78,7 @@ const parabolaTangent = document.querySelector('.parabola-tangent');
 const parabolaPoints = [];
 for (let i = 0; i <= 120; i++) {
   const x = -2.1 + (4.2 * i) / 120;
-  // SVG'de y aşağı doğru arttığı için eğri ters çevrilir
+  // SVG'de y aşağı doğru arttığı için eğri ters çevrilir (y yerine -y)
   parabolaPoints.push(`${x.toFixed(3)} ${(-x * x).toFixed(3)}`);
 }
 parabolaCurve.setAttribute('d', 'M' + parabolaPoints.join('L'));
@@ -85,7 +87,7 @@ const parabolaLength = parabolaCurve.getTotalLength();
 function updateParabola(sectionProgress) {
   const drawn = clamp(sectionProgress / PARABOLA_DRAW, 0, 1) * parabolaLength;
   const point = parabolaCurve.getPointAtLength(drawn);
-  // Teğetin yönü: eğri üzerinde biraz geri ve biraz ileri iki nokta arasındaki doğrultu
+  // Teğetin yönü: noktanın biraz gerisi ile biraz ilerisi arasındaki doğrultu
   const before = parabolaCurve.getPointAtLength(Math.max(0, drawn - 0.02));
   const after = parabolaCurve.getPointAtLength(Math.min(parabolaLength, drawn + 0.02));
   const length = Math.hypot(after.x - before.x, after.y - before.y) || 1;
@@ -104,21 +106,21 @@ function updateParabola(sectionProgress) {
 // Burgers girdabı, Navier–Stokes denklemlerinin tam bir çözümüdür:
 //   u_r = -a·r   (içe sarmal)      u_z = 2a·z   (eksenel gerilme)
 //   u_θ = Γ/(2πr) · (1 - e^(-r²/δ²))   (çekirdek etrafında dönüş)
-// Akış çizgileri bu hız alanı boyunca ilerletilerek bir kez hesaplanır, sonra her karede döndürülüp çizilir.
+// Akış çizgileri bu hız alanında adım adım ilerletilerek bir kez hesaplanır; her karede yalnızca döndürülüp çizilir.
 const flowCanvas = document.getElementById('flow');
 const flowCtx = flowCanvas.getContext('2d');
 const flowSection = flowCanvas.closest('[data-pin]');
 
-// DÜZENLE: şerit sayısı (dış + çekirdek), dönüş şiddeti, çekirdek yarıçapı ve dönme hızı
-const FLOW_LINES = 46;
-const FLOW_CORE_LINES = 12;
-const FLOW_STEPS = 200;
-const FLOW_CHUNKS = 20;
-const FLOW_SWIRL = 1.9;
-const FLOW_CORE = 0.25;
-const FLOW_SPIN = 0.00025;
+// DÜZENLE: şerit sayıları, dönüş şiddeti, çekirdek yarıçapı ve dönme hızı
+const FLOW_LINES = 46; // dış şeritler
+const FLOW_CORE_LINES = 12; // çekirdek şeritleri
+const FLOW_STEPS = 200; // bir şeritteki adım (nokta) sayısı
+const FLOW_CHUNKS = 20; // her şerit kaç parçada çizilir
+const FLOW_SWIRL = 1.9; // dönüş şiddeti (Γ)
+const FLOW_CORE = 0.25; // çekirdek yarıçapı (δ)
+const FLOW_SPIN = 0.00025; // girdabın kendi ekseninde dönme hızı
 
-// Yarıçapa göre renk: dışta camgöbeği, ortada mavi, çekirdekte turuncu
+// Yarıçapa göre renk: çekirdekte turuncu, ortada mavi, dışta camgöbeği
 const FLOW_COLORS = [
   { r: 0.0, rgb: [245, 175, 85] },
   { r: 0.16, rgb: [240, 170, 90] },
@@ -139,14 +141,14 @@ function flowColor(radius) {
   return FLOW_COLORS[FLOW_COLORS.length - 1].rgb;
 }
 
-// Her şerit için (yarıçap, açı, yükseklik) üçlüleri.
-// Dış şeritler tabandan içe sarılır; çekirdek şeritleri eksenin yanında başlayıp yukarı gerilir.
+// Her şerit art arda (yarıçap, açı, yükseklik) üçlülerinden oluşur.
+// Dış şeritler tabandan başlayıp içe sarılır; çekirdek şeritleri eksenin yakınında başlayıp yukarı gerilir.
 const flowLines = [];
 for (let k = 0; k < FLOW_LINES + FLOW_CORE_LINES; k++) {
   const core = k >= FLOW_LINES;
   const z0 = core ? 0.12 + Math.random() * 0.35 : 0.012 + Math.random() ** 1.5 * 0.1;
   const r0 = core ? 0.1 + Math.random() * 0.2 : 0.8 + Math.random() * 0.3;
-  // z = z0·e^(2t) tam 1'e (girdabın tepesine) ulaşana kadar geçen süre
+  // z = z0·e^(2t) yüksekliğinin 1'e (girdabın tepesine) ulaşması için geçen süre
   const duration = Math.log(1 / z0) / 2;
   const dt = duration / FLOW_STEPS;
   const points = new Float32Array((FLOW_STEPS + 1) * 3);
@@ -167,7 +169,8 @@ for (let k = 0; k < FLOW_LINES + FLOW_CORE_LINES; k++) {
   flowLines.push({ points, phase: Math.random(), width: 0.55 + Math.random() * 0.45, beads: [0, 0] });
 }
 
-// Şeritlerin parçaları: değişmeyen bilgiler (konum, kalınlık) bir kez hesaplanır
+// Şeritler parçalara bölünür ki parçalar derinliğe göre sıralanabilsin.
+// Değişmeyen bilgiler (başlangıç noktası, kalınlık) bir kez hesaplanır.
 const FLOW_CHUNK_LENGTH = FLOW_STEPS / FLOW_CHUNKS;
 const FLOW_SHADES = 64;
 const flowChunks = [];
@@ -181,7 +184,7 @@ for (const line of flowLines) {
       radius: 0,
       depth: 0,
       widthFactor: 0.7 + 4.6 * line.width * Math.sin(Math.PI * along) ** 0.8,
-      colors: null, // parça tam görünürken yarıçapı sabittir; renk dizgileri gölge basamağına göre saklanır
+      colors: null, // tam görünen parçanın yarıçapı değişmez; rengi her gölge basamağı için bir kez üretilip saklanır
     });
   }
 }
@@ -217,9 +220,9 @@ function drawFlow(time) {
   const tilt = 0.3;
   const spin = time * FLOW_SPIN;
 
-  // Kaydırma ilerlemesi: çizgiler dıştan içe ve yukarı doğru uzar
+  // Kaydırdıkça çizgiler dıştan içe ve yukarı doğru uzar
   const scrollProgress = parseFloat(flowSection.style.getPropertyValue('--p'));
-  // Bölümün ilk kısmı parabol sahnesine ayrılmış; girdap ondan sonra başlar
+  // Bölümün başı parabole ayrılmış; girdap ondan sonra başlar
   const progress = Number.isNaN(scrollProgress)
     ? 1
     : Math.min(1, clamp((scrollProgress - MATH_INTRO) / (1 - MATH_INTRO), 0, 1) * 1.3);
@@ -237,14 +240,14 @@ function drawFlow(time) {
   flowCtx.lineTo(centerX, baseY - heightScale * progress);
   flowCtx.stroke();
 
-  // Akışla sürüklenen iki küre: her şerit üzerindeki güncel konumları
+  // Her şeritte akışla sürüklenen iki küre: şeritteki güncel konumları
   for (const line of flowLines) {
     line.beads[0] = Math.floor(((time * 0.0001 + line.phase) % 1) * visible);
     line.beads[1] = Math.floor(((time * 0.0001 + line.phase + 0.5) % 1) * visible);
   }
 
-  // Görünen parçaları arkadan öne doğru sırala ki derinlik doğru görünsün. Parça nesneleri bir kez kurulur
-  // (flowChunks); her karede yalnızca derinlik ve görünen uç güncellenir, yeni nesne üretilmez.
+  // Görünen parçalar arkadan öne sıralanır ki öndekiler arkadakilerin üstüne çizilsin. Parçalar bir kez kurulur
+  // (flowChunks); her karede yalnızca derinlikleri ve görünen uçları güncellenir, yeni nesne üretilmez.
   visibleChunks.length = 0;
   for (const chunk of flowChunks) {
     if (chunk.start >= visible) continue;
@@ -276,11 +279,11 @@ function drawFlow(time) {
       }
     }
 
-    // Uçlara doğru incelen şerit; arkadaki parçalar daha koyu
+    // Şerit uçlara doğru incelir; arkadaki parçalar daha koyu
     const width = unit * chunk.widthFactor;
     const shade = 0.5 + 0.5 * clamp((chunk.depth + 0.5) / 1.0, 0, 1);
 
-    // Önce koyu bir kenar: üst üste binen şeritler birbirinden ayrışsın
+    // Önce koyu bir kenar çizilir ki üst üste binen şeritler birbirinden ayrılsın
     flowCtx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
     flowCtx.lineWidth = width + unit * 2;
     flowCtx.stroke();
@@ -320,23 +323,23 @@ if (reducedMotion) {
 }
 
 // ---------- Helyosfer sahnesi ----------
-// NASA'nın "Heliopause Cycle" videosundaki akışı izler. Kaydırdıkça üç biçim arasında geçer:
-//  1) Güneş rüzgârı: dokulu, parlayan Güneş; her yöne fırlayan parçacık izleri ve yanda hilal bir gezegen.
-//  2) Helyosfer: kamera geri çekilir, Güneş bir noktaya iner, kuyruklu kabarcık açılır. İçeride parçacıklar
-//     Güneş'ten sonlanma şokuna (ince halkalar) koşar, oradan kabarcığın duvarı boyunca kuyruğa süpürülür.
-//     Duvar (helyopoz) yavaşça nefes alıp verir; dışarıda yıldızlararası rüzgâr kabarcığın çevresinden akar.
-//  3) Sitenin simgesindeki H: içinden parçacık izleri akar (sütunlarda aşağıdan yukarı, orta çizgide soldan
+// NASA'nın "Heliopause Cycle" videosu örnek alındı. Kaydırdıkça üç biçim arasında geçilir:
+//  1) Güneş rüzgârı: dokulu, parlayan Güneş; her yöne fırlayan parçacık izleri; yanda hilal hâlinde bir gezegen.
+//  2) Helyosfer: kamera geri çekilir, Güneş bir noktaya küçülür, kuyruklu kabarcık açılır. İçerideki parçacıklar
+//     Güneş'ten sonlanma şokuna (ince halkalar) kadar dümdüz gider, oradan kabarcığın duvarı boyunca kuyruğa akar.
+//     Duvar (helyopoz) yavaşça nefes alıp verir; dışarıda yıldızlararası rüzgâr kabarcığın çevresinden dolanır.
+//  3) Sitenin simgesindeki H: içinde parçacık izleri akar (sütunlarda aşağıdan yukarı, orta çizgide soldan
 //     sağa). Kenarları parlak, üstü daha açık gümüş; arada bir üzerinden ışık geçer, harf hafifçe salınır.
-// Her tel bir parçacık izi. Her karede telin üç biçimdeki noktaları hesaplanır ve bölümün ilerlemesine (--p)
-// göre aralarında karıştırılır. Hareket azaltılınca zaman durur, helyosfer sabit görünür.
+// Her tel bir parçacık izidir. Her karede telin üç biçimdeki noktaları hesaplanır ve bölümün ilerlemesine (--p)
+// göre birbirine karıştırılır. Hareket azaltılınca zaman durur; sahne helyosfer adımında sabit kalır.
 // DÜZENLE: tel sayısı (telefonda daha az), renkler, ölçüler ve geçiş aralıkları.
-// Geçiş aralıkları style.css'teki yazıların dilimleriyle (0.30 ve 0.64) uyumlu olmalı.
+// Geçiş aralıkları, style.css'te yazıların değiştiği noktalarla (0.30 ve 0.64) uyumlu olmalı.
 const HELIO_STRANDS = 640;
 const HELIO_STRANDS_PHONE = 300;
-const HELIO_POINTS = 14;
-const HELIO_TO_SPHERE = [0.2, 0.42];
-const HELIO_TO_H = [0.56, 0.78];
-const HELIO_LEVELS = 8; // parlaklık basamakları: her basamak tek seferde çizilir
+const HELIO_POINTS = 14; // bir teldeki nokta sayısı
+const HELIO_TO_SPHERE = [0.2, 0.42]; // Güneş → helyosfer geçişi (--p aralığı)
+const HELIO_TO_H = [0.56, 0.78]; // helyosfer → H geçişi (--p aralığı)
+const HELIO_LEVELS = 8; // parlaklık basamağı sayısı; aynı basamaktaki teller tek seferde çizilir
 
 // Tel türleri ve renkleri: [r, g, b, en sönük opaklık, en parlak opaklık]
 const WIND = 0; // Güneş rüzgârı parçacıkları
@@ -348,17 +351,17 @@ const HELIO_COLORS = [
   [200, 186, 176, 0.03, 0.1],
 ];
 
-// Ölçüler ("unit" cinsinden; unit ≈ sahnenin kısa kenarının %40'ı)
+// Ölçüler "unit" cinsinden (unit: sahnenin kısa kenarının %40'ı, telefonda %46'sı)
 const SUN_R = 0.3; // 1. adımda Güneş'in yarıçapı
-const BUBBLE_R = 0.64; // kabarcığın yan yarıçapı
+const BUBBLE_R = 0.64; // kabarcığın yandan yarıçapı
 const BUBBLE_NOSE = 0.56; // Güneş'ten burna uzaklık (burun yıldızlararası rüzgâra bakar, biraz basıktır)
 const BUBBLE_TAIL = 1.5; // kuyruğun uzunluğu
-const BUBBLE_CAP = 0.3; // duvar profilinde yuvarlak baş kısmın payı
-const SHOCK_R = 0.27; // sonlanma şoku (iç halka)
+const BUBBLE_CAP = 0.3; // duvar profilinde yuvarlak burun kısmının payı
+const SHOCK_R = 0.27; // sonlanma şokunun (iç halkanın) yarıçapı
 const BUBBLE_SHIFT = [-0.24, -0.12]; // kuyruğa yer açmak için Güneş biraz sola ve yukarı kayar
-// H: sitenin simgesiyle (favicon.svg) aynı oranlar, yüksekliği 1
+// H: sitenin simgesiyle (favicon.svg) aynı oranlar; harfin yüksekliği 1
 const H_COLUMN = [0.206, 0.47]; // sütunun iç ve dış kenarının ortaya uzaklığı
-const H_BAR = 0.118; // orta çizginin yarı kalınlığı
+const H_BAR = 0.118; // orta çizginin kalınlığının yarısı
 // H'nin dış hattı (dolgu ve üzerinden geçen ışık için)
 const H_OUTLINE = [
   [-H_COLUMN[1], -0.5], [-H_COLUMN[0], -0.5], [-H_COLUMN[0], -H_BAR], [H_COLUMN[0], -H_BAR],
@@ -377,14 +380,15 @@ let sunTexture = null;
 const smooth = (t) => t * t * (3 - 2 * t);
 const mix = (from, to, t) => from + (to - from) * t;
 
-// Kabarcığın ekseni (kuyruk yönü) ve ona dik iki yön; her karede bakış açısına göre yeniden hesaplanır
+// Kabarcığın ekseni (kuyruk yönü) ve ona dik iki yön. Bakış açısı değiştiği için her karede yeniden hesaplanır.
 const axis = new Float32Array(3);
 const axisU = new Float32Array(3);
 const axisV = new Float32Array(3);
 const profilePoint = new Float32Array(2);
 const local = new Float32Array(3);
 
-// Duvarın yan kesiti: u = 0 burun, u = 1 kuyruğun ucu. [eksen boyunca konum, eksene uzaklık]
+// Duvarın yandan kesiti: u = 0 burun, u = 1 kuyruğun ucu.
+// Sonucu profilePoint'e yazar: [eksen boyunca konum, eksene uzaklık]
 function bubbleProfile(u) {
   if (u < BUBBLE_CAP) {
     const angle = (u / BUBBLE_CAP) * Math.PI / 2;
@@ -397,13 +401,13 @@ function bubbleProfile(u) {
   }
 }
 
-// Kuyruğa doğru solma (1: tam parlak)
+// Kuyruğa doğru solma: burunda 1 (tam parlak), kuyruğun ucunda 0
 function tailFade(u) {
   const t = Math.max(0, (u - BUBBLE_CAP) / (1 - BUBBLE_CAP));
   return 1 - t ** 2.2;
 }
 
-// Güneş yüzeyi bir kez, ekran dışı bir canvas'a çizilir: sıcak renk, tanecikli doku, kenarda kararma
+// Güneş'in yüzeyi bir kez, görünmeyen ayrı bir canvas'a çizilir: sıcak renkler, tanecikli doku, kenarlarda kararma
 function makeSunTexture() {
   const size = 256;
   const r = size / 2;
@@ -442,20 +446,22 @@ function buildHelio(count) {
     const pick = Math.random();
     const role = pick < 0.5 ? WIND : pick < 0.92 ? WALL : ISM;
 
-    // Yönler Fibonacci dağılımıyla küreye eşit yayılır (Güneş'ten fırlayan izler ve kabarcıktaki parçacıklar)
+    // Yönler, Fibonacci dağılımıyla küre üzerine eşit aralıklarla yayılır.
+    // Güneş'ten fırlayan izler de kabarcıktaki parçacıklar da bu yönleri kullanır.
     const y = 1 - (2 * (n + 0.5)) / count;
     const ring = Math.sqrt(1 - y * y);
     const dir = [Math.cos(n * 2.399963) * ring, y, Math.sin(n * 2.399963) * ring];
 
-    // Kabarcıkta: dir[0] kuyruk yönü. Burundan açı ve eksen çevresindeki açı
+    // Kabarcıkta dir[0] kuyruk yönüdür. fromNose: yönün burunla yaptığı açı; around: eksen çevresindeki açı;
+    // startU: telin duvara ulaştığı yer (bkz. bubbleProfile)
     const fromNose = Math.acos(clamp(-dir[0], -1, 1));
     const around = Math.atan2(dir[2], dir[1]);
     const startU = fromNose <= Math.PI / 2
       ? BUBBLE_CAP * (fromNose / (Math.PI / 2))
       : BUBBLE_CAP + ((fromNose - Math.PI / 2) / (Math.PI / 2)) * 0.12;
 
-    // H: tellerin %40'ı sol, %40'ı sağ sütunda, %20'si orta çizgide. Üçte biri şeridin tam kenarında durur
-    // ve harfin hatlarını çizer; gerisi içini doldurur
+    // H: tellerin %40'ı sol sütunda, %40'ı sağ sütunda, %20'si orta çizgide. Yaklaşık üçte biri şeridin tam
+    // kenarında durup harfin hatlarını çizer; gerisi içini doldurur.
     const hPick = Math.random();
     const hEdge = Math.random() < 0.32;
 
@@ -471,13 +477,13 @@ function buildHelio(count) {
       dir,
       around,
       startU,
-      shock: SHOCK_R * (1 + 0.35 * dir[0]), // şok, kuyruk tarafında daha uzakta
-      delay: Math.random() * 0.3,
+      shock: SHOCK_R * (1 + 0.35 * dir[0]), // şok, kuyruk tarafında Güneş'ten daha uzaktır
+      delay: Math.random() * 0.3, // biçim değiştirirken gecikme
       phase: Math.random(),
       // 1. adım: Güneş'ten fırlama hızı ve iz uzunluğu
       sunSpeed: 1 / (2600 + Math.random() * 2200),
       sunLength: 0.6 + Math.random() * 0.8,
-      // 2. adım: tür başına hız ve iz uzunluğu
+      // 2. adım: türe göre hız ve iz uzunluğu
       speed: role === WIND ? 1 / (7000 + Math.random() * 5000)
         : role === WALL ? 1 / (22000 + Math.random() * 14000)
           : 1 / (9000 + Math.random() * 6000),
@@ -495,24 +501,25 @@ function resizeHelio() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   helioCanvas.width = Math.round(helioCanvas.clientWidth * dpr);
   helioCanvas.height = Math.round(helioCanvas.clientHeight * dpr);
-  // Sabitlenmeyen hâlde (hareket azaltma, kısa ekran) helyosfer gösterilir
+  // Bölüm sabitlenmiyorsa (hareket azaltma, kısa ekran) sahne helyosfer adımında durur (bkz. drawHelio)
   helioPinned = helioSection.offsetHeight > window.innerHeight * 1.2;
   const count = helioCanvas.clientWidth < 560 ? HELIO_STRANDS_PHONE : HELIO_STRANDS;
   if (count !== helioStrands.length) buildHelio(count);
 }
 
-// Kabarcıktaki bir noktayı (yerel koordinat: [kuyruk yönü, iki yan]) ekran düzlemine çevirir
+// Kabarcığa göre verilen bir noktayı (kuyruk yönü ve iki yan) sahne koordinatlarına çevirip out[o..o+2]'ye yazar
 function bubbleToView(lx, ly, lz, out, o) {
   out[o] = axis[0] * lx + axisU[0] * ly + axisV[0] * lz + BUBBLE_SHIFT[0];
   out[o + 1] = axis[1] * lx + axisU[1] * ly + axisV[1] * lz + BUBBLE_SHIFT[1];
   out[o + 2] = axis[2] * lx + axisU[2] * ly + axisV[2] * lz;
 }
 
-// 2. adımda bir telin s'inci noktası (s = 0 izin kuyruğu, 1 başı). Görünürlüğü (0–1) döndürür.
+// 2. adım: telin s konumundaki noktasını bubblePoint'e yazar (s = 0 izin sonu, s = 1 başı).
+// Noktanın görünürlüğünü (0–1) döndürür.
 const bubblePoint = new Float32Array(3);
 function bubbleStrandPoint(strand, s, time, size) {
   if (strand.role === WIND) {
-    // Güneş → sonlanma şoku (düz), sonra duvar boyunca kuyruğa
+    // Önce Güneş'ten sonlanma şokuna dümdüz gider, sonra duvar boyunca kuyruğa akar
     const head = (strand.phase + time * strand.speed) % 1;
     const tau = Math.max(0, head - strand.length * (1 - s));
     const shock = strand.shock * size;
@@ -540,7 +547,7 @@ function bubbleStrandPoint(strand, s, time, size) {
   }
 
   if (strand.role === WALL) {
-    // Duvar boyunca burundan kuyruğa akan izler; eksen çevresinde çok yavaş döner
+    // Duvar boyunca burundan kuyruğa akan izler; eksen çevresinde de çok yavaş dönerler
     const head = 0.04 + ((strand.phase + time * strand.speed) % 1) * 1.08;
     const u = clamp(head - strand.length * (1 - s), 0.04, 1);
     bubbleProfile(u);
@@ -548,12 +555,12 @@ function bubbleStrandPoint(strand, s, time, size) {
     const angle = strand.wallAround + time * 0.00004;
     bubbleToView(profilePoint[0] * size, r * Math.cos(angle), r * Math.sin(angle), bubblePoint, 0);
     if (head > 1) return 0;
-    // Kenardan (silüetten) görülen duvar daha parlak: videodaki parlayan kabuk
+    // Duvarın kenardan görülen kısmı daha parlak; videodaki parlayan kabuk gibi
     const facing = Math.abs(axisU[2] * Math.cos(angle) + axisV[2] * Math.sin(angle));
     return Math.min(1, (head - 0.04) * 10) * tailFade(head) * (1 - 0.7 * facing);
   }
 
-  // Yıldızlararası rüzgâr: burun tarafından gelir, kabarcığın çevresinden dolaşıp kuyruk yönünde gider
+  // Yıldızlararası rüzgâr: burun tarafından gelir, kabarcığın çevresinden dolanıp kuyruk yönünde uzaklaşır
   const flow = (strand.phase + time * strand.speed) % 1;
   const head = -1.3 + flow * 3.4;
   const x = head - strand.length * 1.4 * (1 - s);
@@ -565,15 +572,16 @@ function bubbleStrandPoint(strand, s, time, size) {
   return Math.sin(Math.PI * flow);
 }
 
-// 3. adımda (H) bir telin s'inci noktası: kendi şeridinde akan bir iz. Görünürlüğü (0–1) döndürür.
-// letterPoint[3]: sütunların iç kenarındaki iz orta çizginin üstüne geçtiyse 1 (orada çizgi kesilir)
+// 3. adım (H): telin s konumundaki noktasını letterPoint'e yazar; her tel kendi şeridinde akan bir izdir.
+// Noktanın görünürlüğünü (0–1) döndürür.
+// letterPoint[3]: sütunun iç kenarındaki iz orta çizginin üstüne geçtiyse 1 olur; çizgi orada kesilir.
 const letterPoint = new Float32Array(4);
 function letterStrandPoint(strand, s, time) {
   const head = ((strand.phase + time * strand.hSpeed) % 1) * (1 + strand.hLength);
   const t = clamp(head - strand.hLength * (1 - s), 0, 1);
   letterPoint[3] = 0;
   if (strand.hStroke < 2) {
-    // Sütun: aşağıdan yukarı. İç kenar, orta çizginin birleştiği yerde boşluk bırakır
+    // Sütun: iz aşağıdan yukarı akar. İç kenar, orta çizginin birleştiği yerde boşluk bırakır.
     const side = strand.hStroke === 0 ? -1 : 1;
     const innerEdge = strand.hEdge && strand.hAcross < 0;
     const width = H_COLUMN[1] - H_COLUMN[0];
@@ -589,12 +597,12 @@ function letterStrandPoint(strand, s, time) {
       letterPoint[1] = 0.5 - t;
     }
   } else {
-    // Orta çizgi: soldan sağa
+    // Orta çizgi: iz soldan sağa akar
     letterPoint[0] = -H_COLUMN[0] + t * 2 * H_COLUMN[0];
     letterPoint[1] = strand.hAcross * 2 * H_BAR;
   }
   letterPoint[2] = strand.hDepth;
-  // İz şeride girerken ve çıkarken yumuşakça belirip söner
+  // İz, şeride girerken yavaşça belirir, çıkarken yavaşça söner
   return Math.min(1, head / 0.08, (1 + strand.hLength - head) / 0.08);
 }
 
@@ -611,21 +619,21 @@ function drawHelio(time) {
   const pulledBack = smooth(toSphere); // 0: Güneş yakında, 1: kamera geri çekildi
   const bubbleWeight = pulledBack * (1 - smooth(toLetter));
   const sunWeight = 1 - pulledBack;
-  // Geri çekilirken kısa bir ışık patlaması (videodaki gibi)
+  // Kamera geri çekilirken kısa bir ışık patlaması olur (videodaki gibi)
   const flash = Math.sin(Math.PI * pulledBack) ** 2;
 
   // 1. adım: kamera yavaşça geri çekilir; geçişte her şey Güneş'e doğru küçülür
   const sunZoom = (1 - 0.16 * smooth(clamp(p / HELIO_TO_SPHERE[0], 0, 1))) * (1 - 0.85 * pulledBack);
   // 2. adım: kabarcık geçişte büyüyerek açılır; duvar yavaşça nefes alıp verir (helyopoz döngüsü)
   const bubbleSize = (0.35 + 0.65 * pulledBack) * (1 + 0.05 * Math.sin(time * 0.0007));
-  // 3. adım: H hafifçe sağa sola salınır (derinliği görünür); çapraz bir ışık arada bir üzerinden geçer
+  // 3. adım: H hafifçe sağa sola döner, böylece derinliği görünür; arada bir üzerinden çapraz bir ışık geçer
   const letterWeight = smooth(toLetter);
   const letterTurn = 0.2 * Math.sin(time * 0.00045);
   const letterCos = Math.cos(letterTurn);
   const letterSin = Math.sin(letterTurn);
   const shine = -1.4 + ((time * 0.00018) % 1) * 3.4;
 
-  // Kabarcığın ekseni: kuyruk sağa, aşağıya ve ekranın içine doğru; kaydırdıkça hafifçe döner
+  // Kabarcığın ekseni: kuyruk sağa, aşağıya ve ekranın içine doğru uzanır; kaydırdıkça hafifçe döner
   const yaw = 0.36 + p * 0.3;
   const pitch = 0.36;
   axis[0] = Math.cos(pitch) * Math.cos(yaw);
@@ -639,7 +647,7 @@ function drawHelio(time) {
   axisV[1] = axis[2] * axisU[0] - axis[0] * axisU[2];
   axisV[2] = axis[0] * axisU[1] - axis[1] * axisU[0];
 
-  // Telefonda sahne dar; şekil alanı biraz daha doldursun
+  // Telefonda sahne dar olduğu için şekil biraz daha büyük çizilir
   const unit = Math.min(w, h) * (helioCanvas.clientWidth < 560 ? 0.46 : 0.4);
   const cx = w / 2;
   const cy = h / 2;
@@ -649,7 +657,7 @@ function drawHelio(time) {
 
   helioCtx.clearRect(0, 0, w, h);
 
-  // 1. adım: Güneş'in yanındaki hilal gezegen (Güneş'e bakan yüzü aydınlık)
+  // 1. adım: Güneş'in yanındaki gezegen; yalnızca Güneş'e bakan yüzü aydınlık olduğu için hilal gibi görünür
   if (sunWeight > 0.01) {
     const px = sunX + 0.95 * sunZoom * unit;
     const py = sunY - 0.42 * sunZoom * unit;
@@ -683,7 +691,7 @@ function drawHelio(time) {
     helioCtx.fillRect(sunX - r * 2.6, sunY - r * 2.6, r * 5.2, r * 5.2);
   }
 
-  // 2. adım: kabarcığın yuvarlak başındaki sıcak parıltı (helyopoz) ve ortadaki Güneş noktası
+  // 2. adım: kabarcığın yuvarlak burnundaki sıcak parıltı (helyopoz) ve ortadaki parlak Güneş noktası
   const capR = BUBBLE_R * bubbleSize * unit;
   if (bubbleWeight > 0.01) {
     const rim = helioCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, capR * 1.18);
@@ -695,7 +703,7 @@ function drawHelio(time) {
     helioCtx.fillRect(sunX - capR * 1.2, sunY - capR * 1.2, capR * 2.4, capR * 2.4);
 
     // Kabarcığın dış hattı (yandan görünen kenarı): burunda parlak, kuyruğa doğru söner.
-    // İçi sitenin vurgu rengiyle çok hafif dolar (videodaki mor iç kısım)
+    // İçi, sitenin vurgu rengiyle çok hafif doldurulur (videodaki mor iç kısım gibi).
     const outline = new Path2D();
     const toScreen = (lx, side) => {
       bubbleProfile(lx);
@@ -758,12 +766,12 @@ function drawHelio(time) {
   }
 
   for (const strand of helioStrands) {
-    // Teller aynı anda değil, biraz dağınık sırayla biçim değiştirir
+    // Teller hep birlikte değil, biraz dağınık bir sırayla biçim değiştirir
     const a = smooth(clamp(toSphere * 1.3 - strand.delay, 0, 1));
     const b = smooth(clamp(toLetter * 1.3 - strand.delay, 0, 1));
     const d = strand.dir;
 
-    // 1. adım: Güneş yüzeyinden dışarı fırlayan iz; uzaklaştıkça söner. Geçişte iz uzar (hız çizgileri)
+    // 1. adım: Güneş'in yüzeyinden dışarı fırlayan iz; uzaklaştıkça söner. Geçişte izler uzar (hız çizgileri).
     const flight = (strand.phase + time * strand.sunSpeed) % 1;
     const sunHead = SUN_R * (1.04 + flight * 2.6);
     const sunTrail = SUN_R * (0.12 + 0.55 * flight) * strand.sunLength * (1 + 4 * flash);
@@ -802,14 +810,14 @@ function drawHelio(time) {
         z += (lz - z) * b;
         if (letterPoint[3] && gapAt < 0) gapAt = i;
         if (i === HELIO_POINTS - 1) {
-          // Kenarlar parlak, içi sönük; üst taraf daha açık (sitedeki gümüş geçiş); geçen ışık parlatır
+          // Kenarlar parlak, içi sönük; üst taraf daha açık (sitedeki gümüş geçiş gibi); geçen ışık parlatır
           const silver = 0.62 + 0.38 * (0.5 - letterPoint[1]);
           const glint = Math.exp(-(((letterPoint[0] * 0.8 - letterPoint[1] * 0.6 - shine) / 0.13) ** 2));
           letterBright = seen * Math.min(1, (strand.hEdge ? 0.95 : 0.4) * silver + 0.65 * glint);
         }
       }
 
-      // Perspektifle ekrana yansıt
+      // Noktayı perspektifle ekrana yansıt
       const scale = 2.8 / (2.8 - Math.min(z, 1.6));
       helioScreen[i * 2] = cx + x * scale * unit;
       helioScreen[i * 2 + 1] = cy + y * scale * unit;
@@ -820,11 +828,11 @@ function drawHelio(time) {
     const value = (0.3 + 0.7 * near) * visible * (1 - b) + letterBright * b;
     if (value < 0.04) continue;
     const level = clamp(Math.floor(value * HELIO_LEVELS), 0, HELIO_LEVELS - 1);
-    // H harfi tek renk (gümüş) olsun
+    // H harfinde bütün teller aynı renkte (gümüş) çizilir
     const path = paths[b > 0.5 ? WIND : strand.role][level];
     path.moveTo(helioScreen[0], helioScreen[1]);
     for (let i = 1; i < HELIO_POINTS; i++) {
-      // Sütunun iç kenarı orta çizginin üstünden atlar: H'nin birleşim yerinde çizgi olmasın
+      // Sütunun iç kenarı orta çizginin üstünden atlar; H'nin birleşim yerinde çizgi görünmez
       if (i === gapAt && b > 0.5) path.moveTo(helioScreen[i * 2], helioScreen[i * 2 + 1]);
       else path.lineTo(helioScreen[i * 2], helioScreen[i * 2 + 1]);
     }
@@ -832,7 +840,7 @@ function drawHelio(time) {
     if (b < 0.5 && strand.role === WIND && visible > 0.3) {
       tips.rect(helioScreen[last] - tipSize, helioScreen[last + 1] - tipSize, tipSize * 2, tipSize * 2);
     } else if (b >= 0.5 && strand.hSpark && letterBright > 0.25) {
-      // H'de izlerin bir kısmının başında küçük beyaz kıvılcımlar
+      // H'de bazı izlerin başında küçük beyaz kıvılcımlar
       sparks.rect(helioScreen[last] - tipSize * 0.75, helioScreen[last + 1] - tipSize * 0.75, tipSize * 1.5, tipSize * 1.5);
     }
   }
@@ -849,8 +857,8 @@ function drawHelio(time) {
   helioCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
   helioCtx.fill(sparks);
 
-  // 3. adım: H'nin gövdesi (simgedeki gibi üstten alta açılan çok hafif gümüş) ve üzerinden geçen ışık şeridi.
-  // Teller harfi büyük ölçüde kurduktan sonra belirir
+  // 3. adım: H'nin gövdesi (simgedeki gibi yukarıdan aşağı koyulaşan çok hafif gümüş) ve üzerinden geçen ışık
+  // şeridi. Gövde, teller harfi büyük ölçüde oluşturduktan sonra belirir.
   const letterBody = smooth(clamp((letterWeight - 0.5) * 2, 0, 1));
   if (letterBody > 0.01) {
     const project = (hx, hy) => {
@@ -865,7 +873,7 @@ function drawHelio(time) {
     fill.addColorStop(1, `rgba(154, 154, 160, ${0.025 * letterBody})`);
     helioCtx.fillStyle = fill;
     helioCtx.fill(body);
-    // Işık şeridi sol alttan sağ üste doğru geçer (shine, harfin üzerindeki konumu)
+    // Işık şeridi sol alttan sağ üste doğru geçer; shine, şeridin harf üzerindeki konumudur
     const band = helioCtx.createLinearGradient(
       ...project(0.8 * (shine - 0.3), -0.6 * (shine - 0.3)),
       ...project(0.8 * (shine + 0.3), -0.6 * (shine + 0.3)),
@@ -877,7 +885,7 @@ function drawHelio(time) {
     helioCtx.fill(body);
   }
 
-  // 2. adım: sonlanma şoku, Güneş'in çevresinde iki ince halka
+  // 2. adım: sonlanma şoku; Güneş'in çevresinde iki ince halka
   if (bubbleWeight > 0.01) {
     const r = SHOCK_R * bubbleSize * unit;
     const sx = sunX + axis[0] * r * 0.12;
@@ -894,7 +902,7 @@ function drawHelio(time) {
   }
   helioCtx.globalCompositeOperation = 'source-over';
 
-  // 1. adım: Güneş'in kendisi, izlerin önünde; geçişte küçülüp kaybolur. Yüzeyi çok yavaş döner
+  // 1. adım: Güneş'in kendisi izlerin önünde çizilir; geçişte küçülüp kaybolur. Yüzeyi çok yavaş döner.
   if (sunWeight > 0.01) {
     if (!sunTexture) sunTexture = makeSunTexture();
     const r = SUN_R * sunZoom * unit;
@@ -928,13 +936,16 @@ if (reducedMotion) {
   }).observe(helioSection);
 }
 
+// ---------- Kaydırma ----------
+// Sabitlenen bölümlere --p, ekrana giren öğelere --e yazılır; animasyonların geri kalanı style.css'te.
 const pinned = [...document.querySelectorAll('[data-pin]')];
 const entering = [...document.querySelectorAll('[data-enter]')];
 
 function updateScroll() {
   const vh = window.innerHeight;
   const scrollable = document.documentElement.scrollHeight - vh;
-  // Önce bütün ölçümler, sonra bütün yazmalar: arada yazılan bir stil sonraki ölçümü yeniden hesaplatmasın
+  // Önce bütün ölçümler alınır, sonra stiller yazılır. Araya giren bir yazma, sonraki ölçümde
+  // tarayıcıya sayfa düzenini baştan hesaplatırdı.
   const pinnedRects = pinned.map((el) => el.getBoundingClientRect());
   const enteringTops = entering.map((el) => el.getBoundingClientRect().top);
 
@@ -944,7 +955,7 @@ function updateScroll() {
   pinned.forEach((el, i) => {
     const rect = pinnedRects[i];
     if (rect.bottom < -vh || rect.top > vh * 2) return;
-    // Çok kısa ekranda bölümler sabitlenmez: giriş başlangıç, diğerleri bitiş hâlinde dursun
+    // Kısa ekranda bölümler sabitlenmez (bkz. style.css): giriş ilk hâlinde, diğerleri son hâlinde durur
     if (rect.height <= vh * 1.2) {
       el.style.setProperty('--p', el.classList.contains('hero') ? 0 : 1);
       return;
@@ -954,7 +965,7 @@ function updateScroll() {
     if (el === flowSection) updateParabola(progress);
   });
 
-  // Ekrana giren öğeler: alttan girip ekranın ortasına gelene kadar (0 → 1)
+  // Ekrana giren öğeler: alttan girdiği andan ekranın ortasına gelene kadar (0 → 1)
   entering.forEach((el, i) => {
     const top = enteringTops[i];
     if (top > vh * 1.5) return;
