@@ -1,5 +1,5 @@
-# Erişilebilirlik ve duyarlılık denetimi: Playwright + axe (5 kırılım noktası), Pa11y, Lighthouse CI.
-# Siteyi CI içinde yerel bir sunucudan açar; canlı siteye dokunmaz.
+# Erişilebilirlik ve duyarlı tasarım denetimi: Playwright + axe (5 ekran genişliği), Pa11y ve Lighthouse CI.
+# Site, CI içinde yerel bir sunucudan açılır; canlı siteye dokunulmaz.
 name: Erişilebilirlik
 
 on:

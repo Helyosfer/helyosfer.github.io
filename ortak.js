@@ -1,19 +1,21 @@
-// Sayfanın temel kodu (çerçeve koruması, metin bölme, dil, kaydırma, menü). script.js'ten ÖNCE yüklenir (ikisi de defer):
+// Her sayfanın ortak kodu: çerçeve koruması, metin bölme, dil, kaydırma ve menü.
+// script.js'ten ÖNCE yüklenmeli (ikisi de defer ile):
 //   <script defer src="ortak.js"></script>
-// Buradaki üst düzey adlar (reducedMotion, clamp, navLinks…) script.js'te de görünür; orada yeniden tanımlama.
+// Buradaki üst düzey adlara (reducedMotion, clamp, navLinks…) script.js'ten de erişilir; orada aynı adla yeniden tanımlama.
 
-// Başka bir site sayfayı çerçeve (iframe) içine gömerse sayfa gizlenir ve kendi sekmesinde açılmaya çalışılır.
-// GitHub Pages "frame-ancestors" başlığı gönderemediği için tıklama tuzağına (clickjacking) karşı bu kullanılır.
+// Başka bir site bu sayfayı çerçeveye (iframe) gömerse sayfa gizlenir ve kendi sekmesinde açılmaya çalışır.
+// GitHub Pages "frame-ancestors" başlığını gönderemediği için tıklama tuzağına (clickjacking) karşı bu yol kullanılıyor.
 if (window.top !== window.self) {
   document.documentElement.style.display = 'none';
-  try { window.top.location = window.location.href; } catch { /* engellendiyse sayfa gizli kalır */ }
+  try { window.top.location = window.location.href; } catch { /* tarayıcı engellerse sayfa gizli kalır */ }
 }
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 // ---------- Metni parçalara bölme (animasyonlar için) ----------
-// Kelimeleri tek tek <span> içine al ki sırayla yanabilsinler; her cümle kendi satırında
+// Her kelime ayrı bir <span>'e konur ki kelimeler sırayla yanabilsin; her cümle yeni satırdan başlar.
+// Bu sözcüklerle başlayan kelimeler vurgu rengini alır:
 const HIGHLIGHT_WORDS = /^(matematikçi|usta|mathematician|master)/i;
 
 function splitWords(el, text) {
@@ -30,11 +32,11 @@ function splitWords(el, text) {
   });
 }
 
-// Başlığı harf harf <span> içine al ki ekrana girerken "yazılsın"
+// Başlığın her harfi ayrı bir <span>'e konur ki başlık ekrana girerken yazılıyormuş gibi belirsin
 function splitChars(el, text) {
   el.textContent = '';
   let index = 0;
-  // Harfler kelime kelime gruplanır ki satır yalnızca boşluklardan kırılsın
+  // Harfler kelime kelime gruplanır ki satır yalnızca boşluklarda kırılsın
   text.split(' ').forEach((word, w) => {
     if (w > 0) el.append(' ');
     const group = document.createElement('span');
@@ -53,8 +55,8 @@ function splitChars(el, text) {
 }
 
 // ---------- Dil (TR / EN) ----------
-// Türkçe metin HTML'de, İngilizcesi data-en özelliğinde durur. Düğme adları (aria-label) data-en-label'da.
-// Seçim tarayıcıda saklanır.
+// Türkçe metin HTML'de, İngilizcesi data-en özelliğinde durur. Ekran okuyucu adlarının (aria-label)
+// İngilizcesi data-en-label'da. Seçilen dil tarayıcıda saklanır.
 const langToggle = document.querySelector('.lang-toggle');
 const translatable = [...document.querySelectorAll('[data-en]')];
 const labels = [...document.querySelectorAll('[data-en-label]')];
@@ -71,7 +73,7 @@ function setLanguage(lang) {
     else el.textContent = el.dataset[lang];
   });
   labels.forEach((el) => el.setAttribute('aria-label', lang === 'en' ? el.dataset.enLabel : el.dataset.trLabel));
-  // Düğme, geçilecek diğer dili gösterir
+  // Düğmede, tıklanınca geçilecek dil yazar
   langToggle.textContent = lang === 'tr' ? 'EN' : 'TR';
   langToggle.setAttribute('aria-label', lang === 'tr' ? 'EN: Switch to English' : 'TR: Türkçeye geç');
 }
@@ -80,7 +82,7 @@ function savedLanguage() {
   try { return localStorage.getItem('lang'); } catch { return null; }
 }
 
-/** Sayfa betiği kendi sekme başlıklarıyla bir kez çağırır. */
+/** Her sayfa bunu kendi sekme başlıklarıyla bir kez çağırır. */
 function initLanguage(titles) {
   pageTitles = titles;
   langToggle.addEventListener('click', () => {
@@ -89,20 +91,20 @@ function initLanguage(titles) {
     try { localStorage.setItem('lang', next); } catch {}
   });
   setLanguage(savedLanguage() === 'en' ? 'en' : 'tr');
-  // Çevirisi olmayan ama harf harf yazılan metinler (e-posta adresi)
+  // Çevirisi olmayan ama harf harf yazılan metinler de bölünür (ör. e-posta adresi)
   document.querySelectorAll('[data-chars]:not([data-en])').forEach((el) => splitChars(el, el.textContent.trim()));
 }
 
 // ---------- Kaydırma ----------
-// Kaydırma ilerlemesi yalnızca üstteki ince çubuğa yazılır. Kök öğeye (<html>) yazılsaydı her karede bütün
-// sayfanın stili yeniden hesaplanırdı (ana sayfada ölçülen: 12,5 ms/kare yerine 0,6 ms).
+// Kaydırma ilerlemesi yalnızca üstteki ince çubuğa yazılır. <html>'e yazılsaydı her karede bütün sayfanın
+// stili yeniden hesaplanırdı (ana sayfada ölçüldü: kare başına 0,6 ms yerine 12,5 ms).
 const progressBar = document.querySelector('.progress');
 
 function updateProgress(scrollable) {
   progressBar.style.setProperty('--scroll', scrollable > 0 ? window.scrollY / scrollable : 0);
 }
 
-/** Kaydırma ve yeniden boyutlandırmada işi karede bir kez yapar. */
+/** update'i sayfa kaydırıldığında ve pencere boyutu değiştiğinde çalıştırır; karede en fazla bir kez. */
 function onScrollFrame(update) {
   let queued = false;
   const queue = () => {
@@ -131,5 +133,5 @@ navLinks.querySelectorAll('a').forEach((link) => {
   });
 });
 
-// Alt bilgideki yıl
+// Alt bilgideki yıl kendiliğinden güncel kalır
 document.getElementById('year').textContent = new Date().getFullYear();
