@@ -1,6 +1,6 @@
 # helyosfer.me — Yol Haritası
 
-Son güncelleme: 6 Kasım 2026
+Son güncelleme: 7 Kasım 2026
 
 Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir oturumda
 önce bunu oku, sonra "Sıradaki işler" bölümünden devam et.
@@ -38,7 +38,7 @@ Tek sayfalık, siyah ve sade ("premium") bir portfolyo. Kaydırdıkça sahne sah
 | 02 | İlham | Gauss, Galileo, Cantor, Hardy, Hilbert sözleri | Dev tırnak işaretinin içinden girilir; sözler sırayla değişir |
 | 03 | Matematik | Yetenekler + Navier–Stokes girdabı (Burgers girdabı) | Başlık yazılırken `y = x²` parabolü teğetiyle çizilir |
 | 04 | Yazılım | Kod penceresi + yetenekler | Pencere yandan döner, kod satır satır yazılır |
-| 05 | Projeler | Dört proje kartı (aşağıdaki tablo) + "Tüm projeler" (GitHub + Codeberg) | Başlık yazılır, çizgi çizilir, kartlar açılır |
+| 05 | Projeler | Altı proje kartı (aşağıdaki tablo) + "Tüm projeler" (GitHub + Codeberg) | Başlık yazılır, çizgi çizilir, kartlar açılır |
 | 06 | İletişim | `mail@helyosfer.me` | Adres harf harf yazılır |
 | – | Kapanış | "Q.E.D." + "GitHub'da gör" ve "Codeberg'de gör" düğmeleri | Büyüyerek gelir |
 
@@ -47,9 +47,13 @@ Proje kartları:
 | Proje | Ne | Dil | Bağlantılar |
 |---|---|---|---|
 | helyosfer-app | Kişisel finans için yerel çalışan masaüstü çalışma alanı | Python | GitHub |
-| Magnetosphere | Kick moderatör ekipleri için ortak ban listesi (tarayıcı eklentisi) | JavaScript | GitHub |
+| Magnetosphere | Kick moderatör ekipleri için ortak ban listesi (tarayıcı eklentisi + sunucu) | JavaScript, Python | Chrome Web Store + GitHub |
 | Voyager | Yapay zekâ destekli Discord botu (soru cevaplama, kanal özeti, görsel denetimi, hazır kurulum, koruma, bildirimler) | JavaScript | Kendi sitesi (https://voyager.helyosfer.me/) + GitHub |
 | Heliopause | DPI bypass aracı | C# | Codeberg |
+| Namaz Vakti | Türkçe ibadet yardımcısı (Android, yayın öncesi; hedef: 25 Ocak 2027) | Dart, Flutter | Yok, depo gizli; "Yakında" yazıyor. Play Store'a çıkınca bağlantı eklenecek |
+| dotfiles | ASUS TUF Gaming A16 için Arch Linux düzeltmeleri | Shell | GitHub |
+
+Tavuk's (restoran için demo site, gizli depo) bilerek eklenmedi; işletme onaylarsa "Örnek çalışma" olarak eklenebilir.
 
 Bir kartta birden fazla bağlantı olacaksa Voyager kartındaki gibi `<div class="card-links">` içine konur.
 
@@ -75,9 +79,9 @@ Bunların dışında:
 ### Kullanıcıdan cevap bekleyenler
 
 - [ ] `mail@helyosfer.me` adresi Proton'da gerçekten açık mı? Değilse oluşturulmalı ya da sitedeki adres değiştirilmeli.
-- [ ] Kullanılan başka programlama dili var mı? Yetenek listesinde ve kod penceresindeki `stack` satırında Python, JavaScript ve C# yazıyor (üçü de projelerden doğrulandı; C# 12 Ekim'de eklendi). Voyager için "Discord Bots" gibi bir yetenek de eklenebilir.
+- [ ] Kullanılan başka programlama dili var mı? Yetenek listesinde ve kod penceresindeki `stack` satırında Python, JavaScript, C# ve Dart yazıyor (hepsi projelerden doğrulandı; Dart & Flutter 7 Kasım'da Namaz Vakti ile eklendi). Yetenek listesine çevrilmeyen yeni bir ad eklenirse `duzen.spec.mjs` içindeki `OZEL_ADLAR`'a da yazılır. Voyager için "Discord Bots" gibi bir yetenek de eklenebilir.
 - [ ] "Hakkımda" sahnesinde şimdilik yalnızca "Matematikçi. Yazılım geliştirici." duruyor. Daha kişisel bir cümle istenir mi?
-- [ ] Magnetosphere için mağaza bağlantısı (Chrome Web Store vb.) var mı? Şu an yalnızca GitHub'a gidiyor.
+- [x] Magnetosphere'in Chrome Web Store bağlantısı karta eklendi (7 Kasım).
 - [x] Silinen sohbet botunun Cloudflare tarafı (30 Ekim): Worker, alt alan adının DNS kaydı, Access uygulaması ve kuralı, D1 veritabanı (`iletisim`) silindi. VPS'teki kopyadan Worker klasörü de kaldırıldı. Gemini API anahtarı ve Proton SMTP jetonu kullanıcı tarafından iptal edildi (30 Ekim). Proton MX/SPF kayıtlarına dokunulmamalı.
 
 ### Bilinen kusurlar

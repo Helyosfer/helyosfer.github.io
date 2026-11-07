@@ -135,7 +135,7 @@ test('ERS-08 İngilizcede ekran okuyucu adları da İngilizce', async ({ page })
 test('ERS-09 Türkçe sayfada işaretsiz İngilizce yetenek adı yok', async ({ page }) => {
   // Yetenekler Türkçe yazılır, İngilizcesi data-en'de durur. Çevrilmeyenler yalnızca özel adlar olabilir
   // (dil, araç adı); WCAG 3.1.2 özel adları kapsamaz. Yeni bir özel ad eklenirse bu listeye de yaz.
-  const OZEL_ADLAR = ['Python', 'JavaScript', 'C#', 'Git & GitHub'];
+  const OZEL_ADLAR = ['Python', 'JavaScript', 'C#', 'Dart & Flutter', 'Git & GitHub'];
   await page.goto('/');
   const isaretsiz = await page.evaluate((ozel) => [...document.querySelectorAll('ul.skills li')]
     .filter((li) => !li.hasAttribute('data-en') && !li.closest('[lang="en"]') && !ozel.includes(li.textContent.trim()))
