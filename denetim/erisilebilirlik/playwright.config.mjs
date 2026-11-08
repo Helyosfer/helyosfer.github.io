@@ -1,4 +1,5 @@
-// Erişilebilirlik ve duyarlılık testleri. Siteyi deponun kökünden basit bir sunucuyla açar; canlıya dokunmaz.
+// Erişilebilirlik ve duyarlı tasarım testleri. Site, deponun kökünden basit bir yerel sunucuyla açılır;
+// canlı siteye dokunulmaz.
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({

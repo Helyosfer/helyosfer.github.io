@@ -2,8 +2,9 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <!-- CSP: GitHub Pages başlık ekleyemediği için <meta> ile. Yeni bir dış kaynak (CDN, font, görsel)
-       eklersen buraya da yaz. style-src-attr, KaTeX'in ürettiği satır içi style="" öznitelikleri için. -->
+  <!-- İçerik güvenlik politikası (CSP). GitHub Pages HTTP başlığı ekleyemediği için <meta> ile veriliyor.
+       Yeni bir dış kaynak (CDN, yazı tipi, görsel) eklersen buraya da yaz.
+       style-src-attr, KaTeX'in ürettiği satır içi style="" öznitelikleri için gerekli. -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/; style-src 'self' https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/ https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/fonts/ https://fonts.gstatic.com; img-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Helyosfer — Matematikçi & Yazılım Geliştirici</title>
@@ -12,21 +13,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- KaTeX: arka plandaki formülleri gerçek matematik dizgisiyle çizer -->
+  <!-- KaTeX: arka plandaki formülleri gerçek matematik yazımıyla dizer -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Klavye: ilk Tab'da görünür, menüyü atlayıp içeriğe gider -->
+  <!-- Klavye kullananlar için: ilk Tab'da görünür, menüyü atlayıp içeriğe götürür -->
   <a class="skip-link" href="#top" data-en="Skip to content">İçeriğe geç</a>
 
-  <!-- ÇEVİRİ: Sayfadaki Türkçe metin etiketin içinde, İngilizcesi data-en özelliğinde durur.
-       Bir metni değiştirirken ikisini de güncelle. Dil düğmesi (TR/EN) script.js içinde. -->
+  <!-- ÇEVİRİ: Türkçe metin etiketin içinde, İngilizcesi data-en özelliğinde durur.
+       Bir metni değiştirirken ikisini de güncelle. Dil değiştirme kodu ortak.js'te. -->
 
   <!-- Arka planda kayan kalkülüs formülleri (satırları script.js doldurur) -->
   <div class="formulas" aria-hidden="true"></div>
 
+  <!-- Üstteki ince kaydırma çubuğu -->
   <div class="progress" aria-hidden="true"></div>
 
   <header class="site-header">
@@ -66,11 +68,11 @@
       </div>
     </section>
 
-    <!-- HELYOSFER: yüzlerce tel kaydırdıkça biçim değiştirir (script.js çizer; NASA'nın Heliopause Cycle videosu örnek alındı):
-         parlayan Güneş ve her yöne fırlayan parçacıklar (Güneş rüzgârı) → kamera geri çekilir, kuyruklu kabarcık
-         açılır (helyosfer) → sitenin simgesindeki H. Yazılar da her biçimde değişir. Hareket azaltılınca ya da
-         kısa ekranda sahne sabitlenmez: helyosfer durur, üç yazı alt alta görünür.
-         DÜZENLE: yazıları değiştirebilirsin; sıra resimlerle aynı kalmalı. -->
+    <!-- HELYOSFER: yüzlerce tel kaydırdıkça biçim değiştirir (script.js çizer; NASA'nın "Heliopause Cycle"
+         videosu örnek alındı). Sıra: parlayan Güneş ve her yöne fırlayan parçacıklar (Güneş rüzgârı) → kamera geri
+         çekilir, kuyruklu kabarcık açılır (helyosfer) → sitenin simgesindeki H. Her adımda yandaki yazı da değişir.
+         Hareket azaltılınca ya da kısa ekranda sahne sabitlenmez: helyosfer olduğu gibi durur, üç yazı alt alta görünür.
+         DÜZENLE: Yazıları değiştirebilirsin; sıraları çizimdeki adımlarla aynı kalmalı. -->
     <section class="pin helio-pin" data-pin aria-labelledby="helio-title">
       <div class="pin-inner">
         <canvas class="helio-canvas" aria-hidden="true"></canvas>
@@ -105,7 +107,7 @@
     </section>
 
     <!-- SÖZLER: kaydırdıkça sırayla değişir -->
-    <!-- DÜZENLE: Her <figure> bir söz. Ekleyip çıkarabilirsin; sıralama otomatik ayarlanır. -->
+    <!-- DÜZENLE: Her <figure> bir söz. Söz ekleyip çıkarabilirsin; zamanlama kendiliğinden ayarlanır. -->
     <section class="pin quotes-pin" data-pin>
       <div class="pin-inner">
         <div class="container">
@@ -136,7 +138,7 @@
       </div>
     </section>
 
-    <!-- MATEMATİK: önce başlık yazılırken y = x² parabolü çizilir, sonra yetenekler ve girdap gelir -->
+    <!-- MATEMATİK: başlık yazılırken y = x² parabolü çizilir; ardından yetenekler ve girdap gelir -->
     <section id="matematik" class="pin skill-pin math-pin" data-pin>
       <div class="pin-inner">
         <svg class="parabola" viewBox="-3 -4.9 6 5.8" aria-hidden="true">
@@ -197,7 +199,8 @@
 <span class="line"> </span>
 <span class="line"><span class="k">class</span> <span class="f">Helyosfer</span>:</span>
 <span class="line">    roles = [<span class="s">"mathematician"</span>, <span class="s">"developer"</span>]</span>
-<span class="line">    stack = [<span class="s">"Python"</span>, <span class="s">"JavaScript"</span>, <span class="s">"C#"</span>]</span>
+<span class="line">    stack = [<span class="s">"Python"</span>, <span class="s">"JavaScript"</span>,</span>
+<span class="line">             <span class="s">"C#"</span>, <span class="s">"Dart"</span>]</span>
 <span class="line"> </span>
 <span class="line">    <span class="k">def</span> <span class="f">solve</span>(self, problem):</span>
 <span class="line">        proof = self.think(problem)</span>
@@ -206,11 +209,12 @@
           <div>
             <p class="kicker"><span class="num">04</span> <span data-en="Skills">Yetenekler</span></p>
             <h2 data-chars class="typed" data-en="Software">Yazılım</h2>
-            <!-- DÜZENLE: Kullandığın diğer dilleri buraya <li> olarak ekle -->
+            <!-- DÜZENLE: Başka bir dil ya da araç eklemek için yeni bir <li> yaz -->
             <ul class="skills" data-stagger>
               <li>Python</li>
               <li>JavaScript</li>
               <li>C#</li>
+              <li>Dart &amp; Flutter</li>
               <li data-en="Algorithms">Algoritmalar</li>
               <li data-en="Desktop Applications">Masaüstü Uygulamaları</li>
               <li data-en="Browser Extensions">Tarayıcı Eklentileri</li>
@@ -241,10 +245,13 @@
 
         <article class="card tilt" data-enter>
           <div class="card-body">
-            <p class="card-kicker" data-en="JavaScript · Browser extension">JavaScript · Tarayıcı eklentisi</p>
+            <p class="card-kicker" data-en="JavaScript · Python · Browser extension">JavaScript · Python · Tarayıcı eklentisi</p>
             <h3>Magnetosphere</h3>
-            <p data-en="A shared ban list for moderator teams. Ban a user across all of your team's Kick channels with a single click.">Moderatör ekipleri için ortak ban listesi. Bir kullanıcıyı ekibin tüm Kick kanallarında tek tıkla banlar.</p>
-            <a href="https://github.com/Helyosfer/magnetosphere" target="_blank" rel="noopener" class="card-link"><span data-en="View on GitHub">GitHub'da incele</span> <span class="arrow">›</span></a>
+            <p data-en="A shared ban list for Kick moderator teams. Ban a user across all of your team's channels at once, or import thousands of names from a file.">Kick moderatör ekipleri için ortak ban listesi. Bir kullanıcıyı ekibin tüm kanallarında tek seferde banlar; binlerce adı bir dosyadan da yükleyebilirsin.</p>
+            <div class="card-links">
+              <a href="https://chromewebstore.google.com/detail/magnetosphere/kjbbjooackbcfeeoolkfpmdbkomjiflh" target="_blank" rel="noopener" class="card-link"><span data-en="Add to Chrome">Chrome'a ekle</span> <span class="arrow">›</span></a>
+              <a href="https://github.com/Helyosfer/magnetosphere" target="_blank" rel="noopener" class="card-link"><span data-en="View on GitHub">GitHub'da incele</span> <span class="arrow">›</span></a>
+            </div>
           </div>
         </article>
 
@@ -266,6 +273,25 @@
             <h3>Heliopause</h3>
             <p data-en="A DPI bypass tool. Gets past deep packet inspection so you can reach blocked sites.">Bir DPI bypass aracı. Derin paket incelemesini aşarak engellenen sitelere erişmeni sağlar.</p>
             <a href="https://codeberg.org/Helyosfer/Heliopause" target="_blank" rel="noopener" class="card-link"><span data-en="View on Codeberg">Codeberg'de incele</span> <span class="arrow">›</span></a>
+          </div>
+        </article>
+
+        <!-- Depo gizli; uygulama mağazaya çıkınca "Yakında" yerine Play Store bağlantısı konur -->
+        <article class="card tilt" data-enter>
+          <div class="card-body">
+            <p class="card-kicker" data-en="Dart · Flutter · Android">Dart · Flutter · Android</p>
+            <h3>Namaz Vakti</h3>
+            <p data-en="A calm, reliable worship companion in Turkish: prayer times, qibla, the Quran and a hajj and umrah guide. No account, no ad network, no tracking.">Türkçe, sakin ve güvenilir bir ibadet yardımcısı: namaz vakitleri, kıble, Kur'an-ı Kerim ve hac-umre rehberi. Hesap yok, reklam ağı yok, takip yok.</p>
+            <p class="card-soon" data-en="Coming soon">Yakında</p>
+          </div>
+        </article>
+
+        <article class="card tilt" data-enter>
+          <div class="card-body">
+            <p class="card-kicker" data-en="Shell · Arch Linux">Shell · Arch Linux</p>
+            <h3>dotfiles</h3>
+            <p data-en="Linux fixes for the ASUS TUF Gaming A16: the graphics card sleeps when idle, and the keyboard light and screen brightness work as they should.">ASUS TUF Gaming A16 için Linux düzeltmeleri: ekran kartı boştayken uyur, klavye ışığı ve ekran parlaklığı düzgün çalışır.</p>
+            <a href="https://github.com/Helyosfer/dotfiles" target="_blank" rel="noopener" class="card-link"><span data-en="View on GitHub">GitHub'da incele</span> <span class="arrow">›</span></a>
           </div>
         </article>
 
@@ -298,7 +324,7 @@
       </div>
       <div data-enter class="rise">
         <p class="contact-text" data-en="For an idea, a project or a question, write to me.">Bir fikir, bir proje ya da bir soru için bana yaz.</p>
-        <!-- DÜZENLE: e-posta adresi (hem href hem görünen metin) -->
+        <!-- DÜZENLE: E-posta adresini iki yerde değiştir: href'te ve görünen metinde -->
         <a class="contact-mail" data-chars href="mailto:mail@helyosfer.me">mail@helyosfer.me</a>
       </div>
     </section>

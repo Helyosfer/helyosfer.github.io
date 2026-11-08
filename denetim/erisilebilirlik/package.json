@@ -1,7 +1,7 @@
 {
   "name": "helyosfer-erisilebilirlik",
   "private": true,
-  "description": "Site için erişilebilirlik ve duyarlılık denetimi: Playwright + axe, Pa11y, Lighthouse CI",
+  "description": "Site için erişilebilirlik ve duyarlı tasarım denetimi: Playwright + axe, Pa11y, Lighthouse CI",
   "type": "module",
   "scripts": {
     "test": "playwright test -c playwright.config.mjs",
