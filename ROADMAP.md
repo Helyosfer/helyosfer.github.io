@@ -62,7 +62,7 @@ Bunların dışında:
 - Arka planda KaTeX ile dizilmiş kalkülüs formülleri kayar (telefonda daha soluk).
 - Sağ üstte TR / EN dil düğmesi; seçim tarayıcıda hatırlanır.
 - Üstte ince bir kaydırma ilerleme çubuğu.
-- Alt bilgide GitHub ve Instagram (`instagram.com/helyosfer`) bağlantıları.
+- Alt bilgide GitHub bağlantısı.
 - Sekme simgesi: siyah zeminde gümüş düz H.
 - Hareket azaltma tercihi olanlarda ve çok kısa ekranlarda sahneler sabitlenmez, her şey düz akar.
 - Kök dizinde `robots.txt` ve `sitemap.xml` var; yeni sayfa eklenince sitemap'e de yaz.
