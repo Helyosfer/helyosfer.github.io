@@ -1,6 +1,6 @@
 # helyosfer.me — Yol Haritası
 
-Son güncelleme: 7 Kasım 2026
+Son güncelleme: 21 Kasım 2026
 
 Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir oturumda
 önce bunu oku, sonra "Sıradaki işler" bölümünden devam et.
@@ -59,7 +59,7 @@ Bir kartta birden fazla bağlantı olacaksa Voyager kartındaki gibi `<div class
 
 Bunların dışında:
 
-- Arka planda KaTeX ile dizilmiş kalkülüs formülleri kayar (telefonda daha soluk).
+- Arka planda KaTeX ile dizilmiş kalkülüs formülleri kayar (telefonda daha soluk). Yazı bloklarının arkasında kenarları yumuşak koyu bir "perde" var (`style.css`, "Yazı perdesi"); formüller yazının içinden geçmez, çevresinde görünür. Yeni bir yazı bloğu eklenirse perde listesine de yazılır. Gümüş geçişli başlığın kendisine perde verilmez (yazıyı örter), kapsayıcısına verilir.
 - Sağ üstte TR / EN dil düğmesi; seçim tarayıcıda hatırlanır.
 - Üstte ince bir kaydırma ilerleme çubuğu.
 - Alt bilgide GitHub bağlantısı.
@@ -86,8 +86,8 @@ Bunların dışında:
 
 ### Bilinen kusurlar
 
-- [ ] Girdabın altındaki Navier–Stokes denklemi, arkasından geçen formül satırıyla karışıp zor okunuyor (masaüstü). Çözüm: yazının arkasına koyu zemin ya da o bölgede formülleri soluklaştırmak.
-- [ ] Giriş ekranında bir formül satırı tam mottonun arkasından geçiyor.
+- [x] Formüller yazıların içinden geçiyordu (girişteki motto ve Euler özdeşliği, Navier–Stokes denklemi, bölüm başlıkları, sözler, Q.E.D.); yazı bloklarına koyu perde eklendi (21 Kasım).
+- [x] Görsel tarama (21 Kasım): dev tırnak işareti "İlham" etiketinin üstüne biniyordu (sağ üste alındı); başlık altı çizgisi "ş" ve "ç" kuyruklarına değiyordu; kartlarda bağlantılar farklı hizadaydı (artık dibe yaslı); çift düğmeler farklı genişlikteydi (artık eşit, orta çizgiye simetrik); söz ile etiketi arasındaki boşluk söze göre değişiyordu; formüller alt bilginin içinden geçiyordu.
 - [ ] Gerçek bir telefonda dokunarak kaydırma ve akıcılık hiç ölçülmedi; yalnızca tarayıcıda telefon boyutu taklit edildi.
 - [ ] `helyosfer.github.io` adresinin `helyosfer.me`'ye yönlendiği doğrulanmadı.
 - [ ] Voyager kartındaki iki bağlantı yalnızca dar ekranda gözle görüldü; geniş masaüstünde ve 375 piksellik telefonda bakılmadı.
