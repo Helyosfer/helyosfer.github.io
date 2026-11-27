@@ -1,6 +1,6 @@
 # helyosfer.me — Yol Haritası
 
-Son güncelleme: 21 Kasım 2026
+Son güncelleme: 27 Kasım 2026
 
 Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir oturumda
 önce bunu oku, sonra "Sıradaki işler" bölümünden devam et.
@@ -28,7 +28,7 @@ Bu dosya, sitede nerede kaldığımızı ve sırada ne olduğunu tutar. Yeni bir
 
 ## Şu anki durum
 
-Tek sayfalık, siyah ve sade ("premium") bir portfolyo. Kaydırdıkça sahne sahne ilerler.
+Tek sayfalık, siyah zeminli, mor-kırmızı vurgulu bir portfolyo. Kaydırdıkça sahne sahne ilerler.
 
 | # | Bölüm | Ne var | Geçiş |
 |---|---|---|---|
@@ -36,7 +36,7 @@ Tek sayfalık, siyah ve sade ("premium") bir portfolyo. Kaydırdıkça sahne sah
 | – | Helyosfer nedir? | Canvas'ta ~640 tel (telefonda 300): Güneş rüzgârı → helyosfer → H. Üç kısa yazı. NASA'nın "Heliopause Cycle" videosu örnek alındı | Önce dokulu Güneş ve her yöne fırlayan parçacıklar (yanda hilal gezegen); kamera geri çekilir, Güneş noktaya iner, kuyruklu kabarcık açılır (sonlanma şoku halkaları, kuyruğa akan parçacıklar, nefes alan helyopoz); sonra teller sitenin simgesindeki H'ye dönüşür (simgeyle aynı oranlar; içinden izler akar, kenarları parlak gümüş, üzerinden çapraz ışık geçer, hafifçe salınır). Hareket azaltılınca helyosfer durur, yazılar alt alta |
 | 01 | Hakkımda | "Matematikçi. Yazılım geliştirici." | Kelimeler tek tek yanar |
 | 02 | İlham | Gauss, Galileo, Cantor, Hardy, Hilbert sözleri | Dev tırnak işaretinin içinden girilir; sözler sırayla değişir |
-| 03 | Matematik | Yetenekler + Navier–Stokes girdabı (Burgers girdabı) | — |
+| 03 | Matematik | Yetenekler + Navier–Stokes girdabı (Burgers girdabı) | Önce Navier–Stokes denklemi terim terim yazılır, her terimin altında adı (zamanla değişim, taşınım, basınç, viskozite); sonra başlık, yetenekler ve girdap gelir |
 | 04 | Yazılım | Kod penceresi + yetenekler | Pencere yandan döner, kod satır satır yazılır |
 | 05 | Projeler | Altı proje kartı (aşağıdaki tablo) + "Tüm projeler" (GitHub + Codeberg) | Başlık yazılır, çizgi çizilir, kartlar açılır |
 | 06 | İletişim | `mail@helyosfer.me` | Adres harf harf yazılır |
@@ -59,18 +59,21 @@ Bir kartta birden fazla bağlantı olacaksa Voyager kartındaki gibi `<div class
 
 Bunların dışında:
 
-- Arka planda KaTeX ile dizilmiş kalkülüs formülleri kayar (telefonda daha soluk). Yazı bloklarının arkasında kenarları yumuşak koyu bir "perde" var (`style.css`, "Yazı perdesi"); formüller yazının içinden geçmez, çevresinde görünür. Yeni bir yazı bloğu eklenirse perde listesine de yazılır. Gümüş geçişli başlığın kendisine perde verilmez (yazıyı örter), kapsayıcısına verilir.
+- Tema (27 Kasım): mor (`--accent`) ve kırmızı (`--accent-2`) vurgular; büyük başlıklar beyazdan leylağa ve pembeye geçer (`--title`), düğmeler ve ince çizgiler mordan kırmızıya (`--aurora`). Arka planda sol üstte mor, sağ altta kırmızı hafif ışık. Girdap da aynı renklerde.
+- Arka planda 5-12 saniyede bir tek bir yıldırım çakar (`script.js`, "Yıldırımlar"). Yalnızca çaktığı yarım saniye çizilir; hareket azaltılınca ve sekme arkadayken çakmaz.
+- Arka planda KaTeX ile dizilmiş formüller kayar (telefonda daha soluk): kalkülüs formülleri ile Milenyum Problemleri'nin denklemleri sırayla karışık. Yazı bloklarının arkasında kenarları yumuşak koyu bir "perde" var (`style.css`, "Yazı perdesi"); formüller yazının içinden geçmez, çevresinde görünür. Yeni bir yazı bloğu eklenirse perde listesine de yazılır. Gümüş geçişli başlığın kendisine perde verilmez (yazıyı örter), kapsayıcısına verilir.
 - Sağ üstte TR / EN dil düğmesi; seçim tarayıcıda hatırlanır.
 - Üstte ince bir kaydırma ilerleme çubuğu.
 - Alt bilgide GitHub bağlantısı.
-- Sekme simgesi: siyah zeminde gümüş düz H.
+- Sekme simgesi: siyah zeminde gümüş düz H (temaya uyarlanmadı).
 - Hareket azaltma tercihi olanlarda ve çok kısa ekranlarda sahneler sabitlenmez, her şey düz akar.
 - Kök dizinde `robots.txt` ve `sitemap.xml` var; yeni sayfa eklenince sitemap'e de yaz.
 
 ### Denenip vazgeçilenler
 
-- **Yıldırımlar ve mor/kırmızı tema:** kasıyordu ve "premium" durmuyordu; siyah-gümüş temaya geçildi.
-- **Milenyum Problemleri formülleri (arka plan):** tanıdık değildi; kalkülüs formülleriyle değiştirildi.
+- **Yıldırımlar ve mor/kırmızı tema:** kasıyordu ve "premium" durmuyordu; siyah-gümüş temaya geçilmişti. 27 Kasım'da kullanıcının isteğiyle geri geldi (eski kod git geçmişinde yoktu, yeniden yazıldı; yıldırım bu kez çok hafif).
+- **Matematik bölümündeki `y = x²` parabolü:** 27 Kasım'da kullanıcının isteğiyle kaldırıldı; yerine denklem girişi geldi. Tekrar önerme.
+- **Milenyum Problemleri formülleri (arka plan):** tanıdık değildi, kalkülüs formülleriyle değiştirilmişti. 27 Kasım'da kullanıcının isteğiyle geri eklendi; artık iki liste birlikte kayıyor.
 - **Yazılım bölümünde ekranın içinden geri çekilme (zoom out, dizüstü çerçevesi):** eklendi, sonra kullanıcının isteğiyle geri alındı. Tekrar önerme.
 - **Hizmetler sayfası ve sohbet botu (30 Ekim):** `/hizmetler/` sayfası (penguenler, Arch sahnesi, sohbet penceresi), yapay zekâ asistanlı iletişim Worker'ı (`iletisim-worker/`), onun güvenlik, uçtan uca, API ve yük testleri ve üç GitHub iş akışı kullanıcının isteğiyle tamamen silindi. Site yine tek sayfa. Tekrar önerme; eski hâli git geçmişinde (`0e82686`, `009da9a`).
 

@@ -8,9 +8,10 @@ initLanguage({
 });
 
 // ---------- Arka planda kayan formüller ----------
-// Kalkülüsten tanıdık formüller. LaTeX ile yazılır, KaTeX ile dizilir.
-// DÜZENLE: Listeye formül ekleyebilirsin. Satır sayısı FORMULA_ROWS'ta.
-const FORMULAS = [
+// İki liste sırayla karışır: kalkülüsten tanıdık formüller ve yedi Milenyum Problemi'nin simgesel ifadeleri.
+// LaTeX ile yazılır, KaTeX ile dizilir.
+// DÜZENLE: İki listeye de formül ekleyebilirsin. Satır sayısı FORMULA_ROWS'ta.
+const CALCULUS = [
   String.raw`\frac{d}{dx}\ln x = \frac{1}{x}`,
   String.raw`\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}`,
   String.raw`\lim_{n\to\infty}\left(1+\frac{1}{n}\right)^{n} = e`,
@@ -28,6 +29,27 @@ const FORMULAS = [
   String.raw`\int_1^{e}\frac{1}{x}\,dx = 1`,
   String.raw`\frac{d}{dx}\sin x = \cos x`,
 ];
+const MILLENNIUM = [
+  // Riemann Hipotezi
+  String.raw`\zeta(s) = \sum_{n=1}^{\infty}\frac{1}{n^{s}}`,
+  String.raw`\zeta(s) = 0 \;\Rightarrow\; \operatorname{Re}(s) = \tfrac{1}{2}`,
+  // P – NP
+  String.raw`P \overset{?}{=} NP`,
+  // Navier–Stokes
+  String.raw`\frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u}\cdot\nabla)\mathbf{u} = -\nabla p + \nu\nabla^{2}\mathbf{u}`,
+  String.raw`\nabla\cdot\mathbf{u} = 0`,
+  // Yang–Mills ve kütle aralığı
+  String.raw`D_{\mu}F^{\mu\nu} = 0`,
+  // Birch ve Swinnerton-Dyer
+  String.raw`\operatorname{ord}_{s=1} L(E,s) = \operatorname{rank} E(\mathbb{Q})`,
+  String.raw`y^{2} = x^{3} + ax + b`,
+  // Hodge
+  String.raw`\mathrm{Hdg}^{k}(X) = H^{2k}(X,\mathbb{Q}) \cap H^{k,k}(X)`,
+  // Poincaré (çözüldü: Perelman, Ricci akışı)
+  String.raw`\pi_{1}(M^{3}) = 0 \;\Rightarrow\; M^{3} \cong S^{3}`,
+  String.raw`\frac{\partial g_{ij}}{\partial t} = -2R_{ij}`,
+];
+const FORMULAS = CALCULUS.flatMap((tex, i) => (i < MILLENNIUM.length ? [tex, MILLENNIUM[i]] : [tex]));
 const FORMULA_ROWS = 6;
 
 // KaTeX yüklenemezse (ör. çevrimdışı) arka plan boş kalır; sayfanın geri kalanı çalışır
@@ -37,7 +59,7 @@ if (window.katex) {
     `<span class="formula">${katex.renderToString(String.raw`\displaystyle ` + tex, { throwOnError: false })}</span>`
   );
   // Satırın yarısı ekrandan geniş olduğu sürece kayma kesintisiz görünür. Bir formül en az ~200 px tuttuğu için
-  // dar ekranda daha azı yeter: telefonda 16 yerine 6 formül, yani ~%60 daha az öğe. Süre de aynı oranda kısalır,
+  // dar ekranda daha azı yeter: telefonda 27 yerine 6 formül. Süre de aynı oranda kısalır,
   // böylece kayma hızı değişmez.
   const perRow = Math.min(rendered.length, Math.max(6, Math.ceil(window.innerWidth / 110)));
   for (let row = 0; row < FORMULA_ROWS; row++) {
@@ -65,8 +87,16 @@ document.querySelectorAll('[data-stagger]').forEach((group) => {
   });
 });
 
-// Matematik bölümünün başında ayrılan pay (style.css'teki --intro ile aynı olmalı)
-const MATH_INTRO = 0;
+// ---------- Matematik girişi ----------
+// Bölümün başında Navier–Stokes denklemi terim terim yazılır (görünümü style.css'te, .math-intro).
+// Terimler HTML'de düz yazıyla durur; KaTeX yüklendiyse gerçek matematik yazımıyla dizilir.
+// DÜZENLE: MATH_INTRO, bölümün ne kadarının girişe ayrıldığını belirler; style.css'teki --intro ile aynı olmalı.
+const MATH_INTRO = 0.3;
+if (window.katex) {
+  document.querySelectorAll('[data-tex]').forEach((el) => {
+    el.innerHTML = katex.renderToString(el.dataset.tex, { throwOnError: false });
+  });
+}
 
 // ---------- Navier–Stokes girdabı ----------
 // Burgers girdabı, Navier–Stokes denklemlerinin tam bir çözümüdür:
@@ -86,13 +116,13 @@ const FLOW_SWIRL = 1.9; // dönüş şiddeti (Γ)
 const FLOW_CORE = 0.25; // çekirdek yarıçapı (δ)
 const FLOW_SPIN = 0.00025; // girdabın kendi ekseninde dönme hızı
 
-// Yarıçapa göre renk: çekirdekte turuncu, ortada mavi, dışta camgöbeği
+// Yarıçapa göre renk (sitenin mor-kırmızı temasıyla aynı): çekirdekte kırmızı, ortada mor, dışta leylak
 const FLOW_COLORS = [
-  { r: 0.0, rgb: [245, 175, 85] },
-  { r: 0.16, rgb: [240, 170, 90] },
-  { r: 0.3, rgb: [70, 110, 230] },
-  { r: 0.55, rgb: [60, 140, 235] },
-  { r: 0.9, rgb: [120, 230, 232] },
+  { r: 0.0, rgb: [255, 120, 140] },
+  { r: 0.16, rgb: [255, 93, 125] },
+  { r: 0.3, rgb: [150, 90, 245] },
+  { r: 0.55, rgb: [165, 120, 255] },
+  { r: 0.9, rgb: [215, 195, 255] },
 ];
 
 function flowColor(radius) {
@@ -188,6 +218,7 @@ function drawFlow(time) {
 
   // Kaydırdıkça çizgiler dıştan içe ve yukarı doğru uzar
   const scrollProgress = parseFloat(flowSection.style.getPropertyValue('--p'));
+  // Bölümün başı denklem girişine ayrılmış; girdap ondan sonra başlar
   const progress = Number.isNaN(scrollProgress)
     ? 1
     : Math.min(1, clamp((scrollProgress - MATH_INTRO) / (1 - MATH_INTRO), 0, 1) * 1.3);
@@ -900,6 +931,93 @@ if (reducedMotion) {
     if (helioRunning && !wasRunning) requestAnimationFrame(helioLoop);
   }).observe(helioSection);
 }
+
+// ---------- Yıldırımlar ----------
+// Arka planda arada bir tek bir yıldırım çakar. Eski deneme sayfayı kasıyordu; bu yüzden yıldırım yalnızca
+// çaktığı yarım saniye boyunca çizilir, arada hiçbir şey çalışmaz. Hareket azaltılınca ve sekme arkadayken çakmaz.
+// Bir çakışta parlaklık en çok iki kez yükselir (saniyede üçten az parlama, WCAG 2.3.1).
+// DÜZENLE: iki yıldırım arası bekleme (ms) ve bir yıldırımın ömrü
+const STORM_GAP = [5000, 12000];
+const STORM_LIFE = 520;
+
+const stormCanvas = document.querySelector('.storm');
+const stormCtx = stormCanvas.getContext('2d');
+let stormBolt = null;
+let stormBorn = 0;
+
+// Bir doğruyu, orta noktalarını rastgele kaydırarak kırık bir çizgiye çevirir
+function jagged(points, amount, depth) {
+  for (let d = 0; d < depth; d++) {
+    const next = [points[0]];
+    for (let i = 1; i < points.length; i++) {
+      const a = points[i - 1];
+      const b = points[i];
+      next.push([(a[0] + b[0]) / 2 + (Math.random() - 0.5) * amount, (a[1] + b[1]) / 2 + (Math.random() - 0.5) * amount * 0.3], b);
+    }
+    points = next;
+    amount *= 0.55;
+  }
+  return points;
+}
+
+// Ana kol ekranın üstünden iner; iki üç ince dal ondan ayrılır
+function buildBolt(w, h) {
+  const x0 = w * (0.1 + Math.random() * 0.8);
+  const main = jagged([[x0, -10], [x0 + (Math.random() - 0.5) * w * 0.35, h * (0.45 + Math.random() * 0.4)]], w * 0.09, 6);
+  const bolt = [{ points: main, width: 1 }];
+  const branches = 2 + Math.floor(Math.random() * 2);
+  for (let b = 0; b < branches; b++) {
+    const start = main[Math.floor(main.length * (0.2 + Math.random() * 0.5))];
+    const length = h * (0.12 + Math.random() * 0.18);
+    const lean = (Math.random() < 0.5 ? -1 : 1) * (0.4 + Math.random() * 0.7);
+    bolt.push({ points: jagged([start, [start[0] + lean * length, start[1] + length]], length * 0.18, 4), width: 0.5 });
+  }
+  return bolt;
+}
+
+function drawStorm(time) {
+  const age = (time - stormBorn) / STORM_LIFE;
+  stormCtx.clearRect(0, 0, stormCanvas.width, stormCanvas.height);
+  if (age >= 1) {
+    stormBolt = null;
+    scheduleStorm();
+    return;
+  }
+  // Önce parlar, bir an söner, yeniden parlar ve sönüp gider
+  const glow = (1 - Math.max(0, age)) ** 2 * (age > 0.12 && age < 0.22 ? 0.3 : 1);
+  stormCtx.lineCap = 'round';
+  stormCtx.lineJoin = 'round';
+  // Üst üste üç kat: geniş mor hâle, vurgu rengi, ince parlak çekirdek
+  const layers = [
+    [11, `rgba(150, 90, 255, ${0.07 * glow})`],
+    [4, `rgba(191, 155, 255, ${0.2 * glow})`],
+    [1.3, `rgba(245, 236, 255, ${0.8 * glow})`],
+  ];
+  for (const [width, color] of layers) {
+    stormCtx.strokeStyle = color;
+    for (const branch of stormBolt) {
+      stormCtx.lineWidth = width * branch.width;
+      stormCtx.beginPath();
+      branch.points.forEach(([x, y], i) => (i ? stormCtx.lineTo(x, y) : stormCtx.moveTo(x, y)));
+      stormCtx.stroke();
+    }
+  }
+  requestAnimationFrame(drawStorm);
+}
+
+function scheduleStorm() {
+  setTimeout(() => {
+    if (document.hidden) return scheduleStorm();
+    // Tuval ekran boyutunu çakmadan hemen önce alır; yeniden boyutlandırmayı ayrıca izlemek gerekmez
+    stormCanvas.width = window.innerWidth;
+    stormCanvas.height = window.innerHeight;
+    stormBolt = buildBolt(stormCanvas.width, stormCanvas.height);
+    stormBorn = performance.now();
+    requestAnimationFrame(drawStorm);
+  }, STORM_GAP[0] + Math.random() * (STORM_GAP[1] - STORM_GAP[0]));
+}
+
+if (!reducedMotion) scheduleStorm();
 
 // ---------- Kaydırma ----------
 // Sabitlenen bölümlere --p, ekrana giren öğelere --e yazılır; animasyonların geri kalanı style.css'te.
