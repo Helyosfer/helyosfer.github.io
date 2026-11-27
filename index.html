@@ -25,8 +25,11 @@
   <!-- ÇEVİRİ: Türkçe metin etiketin içinde, İngilizcesi data-en özelliğinde durur.
        Bir metni değiştirirken ikisini de güncelle. Dil değiştirme kodu ortak.js'te. -->
 
-  <!-- Arka planda kayan kalkülüs formülleri (satırları script.js doldurur) -->
+  <!-- Arka planda kayan formüller: kalkülüs ve Milenyum Problemleri (satırları script.js doldurur) -->
   <div class="formulas" aria-hidden="true"></div>
+
+  <!-- Arka planda arada bir çakan yıldırım (script.js çizer) -->
+  <canvas class="storm" aria-hidden="true"></canvas>
 
   <!-- Üstteki ince kaydırma çubuğu -->
   <div class="progress" aria-hidden="true"></div>
@@ -138,9 +141,23 @@
       </div>
     </section>
 
-    <!-- MATEMATİK: yetenekler ve girdap -->
+    <!-- MATEMATİK: önce Navier–Stokes denklemi terim terim yazılır; ardından yetenekler ve girdap gelir -->
     <section id="matematik" class="pin skill-pin math-pin" data-pin>
       <div class="pin-inner">
+        <!-- Giriş süs amaçlıdır (denklem aşağıda, girdabın altında da yazıyor); ekran okuyucu atlar.
+             data-tex: terimin LaTeX yazımı, script.js KaTeX ile dizer. İçindeki düz yazı, KaTeX yüklenmezse görünür.
+             DÜZENLE: Terim adlarını değiştirebilirsin (Türkçesi içeride, İngilizcesi data-en'de). -->
+        <div class="math-intro" aria-hidden="true">
+          <div class="math-intro-box">
+            <p class="math-intro-title" data-en="The Navier–Stokes equation">Navier–Stokes denklemi</p>
+            <div class="math-intro-terms" data-stagger>
+              <p class="term"><span class="term-math" data-tex="\frac{\partial \mathbf{u}}{\partial t}">∂u/∂t</span><span class="term-name" data-en="change in time">zamanla değişim</span></p>
+              <p class="term"><span class="term-math" data-tex="+\;(\mathbf{u}\cdot\nabla)\,\mathbf{u}">+ (u·∇)u</span><span class="term-name" data-en="convection">taşınım</span></p>
+              <p class="term"><span class="term-math" data-tex="=\;-\frac{1}{\rho}\nabla p">= −∇p/ρ</span><span class="term-name" data-en="pressure">basınç</span></p>
+              <p class="term"><span class="term-math" data-tex="+\;\nu\,\nabla^{2}\mathbf{u}">+ ν∇²u</span><span class="term-name" data-en="viscosity">viskozite</span></p>
+            </div>
+          </div>
+        </div>
         <div class="container split">
           <div>
             <p class="kicker"><span class="num">03</span> <span data-en="Skills">Yetenekler</span></p>
@@ -283,7 +300,8 @@
             <defs>
               <linearGradient id="sigma-gradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0.1" stop-color="#ffffff"/>
-                <stop offset="1" stop-color="#8e8e93"/>
+                <stop offset="0.65" stop-color="#cdb6ff"/>
+                <stop offset="1" stop-color="#ff8fa8"/>
               </linearGradient>
             </defs>
             <path d="M18.5 7.5V4.5H5.5L12.5 12L5.5 19.5H18.5V16.5"/>

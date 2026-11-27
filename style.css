@@ -1,5 +1,6 @@
 /* ---------- Renkler ve temel değişkenler ---------- */
-/* DÜZENLE: --accent sitenin tek vurgu rengi; idareli kullan. */
+/* Mor-kırmızı tema. DÜZENLE: --accent (mor) ana vurgu, --accent-2 (kırmızı) ikinci vurgu.
+   --title büyük başlıkların, --aurora düğmelerin ve ince çizgilerin geçişi. */
 :root {
   --bg: #000000;
   --surface: #0d0d0f;
@@ -7,7 +8,9 @@
   --muted: #86868b;
   --border: rgba(255, 255, 255, 0.1);
   --accent: #bf9bff;
-  --silver: linear-gradient(180deg, #ffffff 20%, #8e8e93 100%);
+  --accent-2: #ff5d7d;
+  --title: linear-gradient(180deg, #ffffff 22%, #cdb6ff 70%, #ff8fa8 100%);
+  --aurora: linear-gradient(90deg, var(--accent), var(--accent-2));
   --radius: 28px;
   --max-width: 1080px;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -29,10 +32,27 @@ body {
   overflow-x: hidden;
 }
 
+/* ---------- Arka plan ışıkları ----------
+   Sol üstte mor, sağ altta kırmızı, çok hafif iki ışık. Sabit durur; kaydırırken yeniden boyanmaz. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(70vw 60vh at 8% 0%, rgba(140, 80, 255, 0.2), transparent 70%),
+    radial-gradient(60vw 55vh at 96% 100%, rgba(255, 50, 95, 0.14), transparent 70%);
+}
+
+/* Yıldırım tuvali (script.js çizer); hareket azaltılınca hiç çizilmez */
+.storm { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .storm { display: none; } }
+
 /* ---------- Arka planda kayan formüller ---------- */
 /* DÜZENLE: Formüllerin ne kadar belirgin olacağını --formula-color belirler */
 .formulas {
-  --formula-color: rgba(255, 255, 255, 0.2);
+  --formula-color: rgba(214, 196, 255, 0.2);
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -84,7 +104,7 @@ body {
   right: 0;
   height: 2px;
   z-index: 20;
-  background: var(--text);
+  background: var(--aurora);
   transform: scaleX(var(--scroll, 0));
   transform-origin: left;
 }
@@ -134,14 +154,14 @@ a, button { scroll-margin: 72px 0 25vh; }
 /* ---------- Yazı perdesi ----------
    Yazı bloklarının arkasında kenarları yumuşak, koyu bir zemin: arka plandaki formüller yazının içinden geçmez,
    yalnızca çevresinde görünür. Perde, bloğun kendi kaydırma animasyonuyla (solma, kayma) birlikte hareket eder.
-   Gümüş geçişli başlıkların (background-clip: text) kendisine verilmez; perde yazıyı örterdi. Kapsayıcısına verilir.
+   Renk geçişli başlıkların (background-clip: text) kendisine verilmez; perde yazıyı örterdi. Kapsayıcısına verilir.
    DÜZENLE: Formüller yazının arkasında ne kadar seçilsin? --scrim'in son sayısı: 1 hiç görünmez, 0 perde yok. */
 :root { --scrim: rgba(0, 0, 0, 0.86); }
-.kicker, .helio-steps, .statement, .quote, .split > div:not(.terminal), .flow figcaption, .section > .rise, .zoom { isolation: isolate; }
-.kicker, .statement, .split > div:not(.terminal), .flow figcaption, .section > .rise, .zoom { position: relative; }
+.kicker, .helio-steps, .statement, .quote, .split > div:not(.terminal), .flow figcaption, .math-intro-box, .section > .rise, .zoom { isolation: isolate; }
+.kicker, .statement, .split > div:not(.terminal), .flow figcaption, .math-intro-box, .section > .rise, .zoom { position: relative; }
 /* Etiket, altındaki bloğun perdesinin üstünde kalır; yoksa perde etiketi de karartır */
 .kicker { z-index: 1; }
-:is(.kicker, .helio-steps, .statement, .quote, .split > div:not(.terminal), .flow figcaption, .section > .rise, .zoom)::before {
+:is(.kicker, .helio-steps, .statement, .quote, .split > div:not(.terminal), .flow figcaption, .math-intro-box, .section > .rise, .zoom)::before {
   content: "";
   position: absolute;
   inset: -10px -18px;
@@ -173,8 +193,8 @@ a, button { scroll-margin: 72px 0 25vh; }
 /* Dikey iç boşluk görünümü değiştirmez, yalnızca dokunma alanını büyütür */
 .nav-links a { padding: 6px 0; text-decoration: none; color: var(--muted); font-size: 0.82rem; transition: color 0.2s; }
 .nav-links a:hover { color: var(--text); }
-.nav-links .nav-cta { padding: 5px 14px; border-radius: 999px; background: var(--text); color: #000; font-weight: 500; }
-.nav-links .nav-cta:hover { color: #000; background: #fff; }
+.nav-links .nav-cta { padding: 5px 14px; border-radius: 999px; background: var(--aurora); color: #000; font-weight: 600; transition: filter 0.2s; }
+.nav-links .nav-cta:hover { color: #000; filter: brightness(1.12); }
 
 .nav-right { display: flex; align-items: center; gap: 20px; }
 
@@ -189,7 +209,7 @@ a, button { scroll-margin: 72px 0 25vh; }
   cursor: pointer;
   transition: border-color 0.2s;
 }
-.lang-toggle:hover { border-color: var(--text); }
+.lang-toggle:hover { border-color: var(--accent); }
 
 .nav-toggle { display: none; flex-direction: column; gap: 6px; padding: 8px; border: 0; background: none; cursor: pointer; }
 .nav-toggle span { width: 20px; height: 1.5px; background: var(--text); }
@@ -229,9 +249,10 @@ a, button { scroll-margin: 72px 0 25vh; }
   width: min(1200px, 140vw);
   height: 640px;
   transform: translate(-50%, -50%);
-  /* Üstte mor ışık, altında koyu bir çekirdek: formüller başlığın ve mottonun arkasından geçmez */
+  /* Üstte mor-kırmızı ışık, altında koyu bir çekirdek: formüller başlığın ve mottonun arkasından geçmez */
   background:
-    radial-gradient(closest-side, rgba(191, 155, 255, 0.13), transparent),
+    radial-gradient(closest-side, rgba(255, 93, 125, 0.1), transparent 70%),
+    radial-gradient(closest-side, rgba(170, 120, 255, 0.24), transparent),
     radial-gradient(closest-side, var(--scrim) 58%, transparent);
   opacity: calc(1 - var(--p));
   pointer-events: none;
@@ -253,7 +274,7 @@ h1 {
   letter-spacing: -0.055em;
   line-height: 1;
   padding-bottom: 0.08em;
-  background: var(--silver);
+  background: var(--title);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -289,12 +310,13 @@ h1 {
   font-weight: 500;
   text-align: center;
   text-decoration: none;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  transition: filter 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
-.btn-primary { background: var(--text); color: #000; }
-.btn-primary:hover { background: #fff; }
-.btn-ghost { border-color: rgba(255, 255, 255, 0.28); background: rgba(0, 0, 0, 0.6); }
-.btn-ghost:hover { border-color: var(--text); }
+/* Siyah yazı geçişin iki ucunda da okunaklı (mor üstünde 9:1, kırmızı üstünde 7:1) */
+.btn-primary { background: var(--aurora); color: #000; font-weight: 600; box-shadow: 0 8px 30px rgba(170, 100, 255, 0.25); }
+.btn-primary:hover { filter: brightness(1.12); box-shadow: 0 8px 36px rgba(255, 93, 125, 0.35); }
+.btn-ghost { border-color: rgba(191, 155, 255, 0.4); background: rgba(0, 0, 0, 0.6); }
+.btn-ghost:hover { border-color: var(--accent); }
 
 /* ---------- Helyosfer sahnesi ----------
    Teller script.js'te çizilir. Sıra (--p): 0–0.30 Güneş · 0.30–0.64 helyosfer kabarcığı · 0.64–1 H.
@@ -321,7 +343,7 @@ h1 {
   line-height: 1.05;
   letter-spacing: -0.045em;
   padding-bottom: 0.08em;
-  background: var(--silver);
+  background: var(--title);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -391,13 +413,13 @@ h1 {
   line-height: 1.06;
   letter-spacing: -0.045em;
   padding-bottom: 0.1em;
-  background: var(--silver);
+  background: var(--title);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .quote figcaption { margin-top: 1.5rem; font-size: 1.05rem; color: var(--muted); }
-.quote figcaption::before { content: "— "; color: var(--accent); }
+.quote figcaption::before { content: "— "; color: var(--accent-2); }
 
 /* ---------- Yetenekler ---------- */
 /* İki sütunlu düzen. minmax(0, 1fr): uzun bir kelime ya da kod satırı sütunu genişletip ekrandan taşırmasın. */
@@ -422,20 +444,73 @@ h1 {
 }
 @keyframes caret { 50% { opacity: 0; } }
 
-/* Matematik bölümü: --q (0 → 1) yeteneklere ve girdaba ayrılır.
-   --intro, script.js'teki MATH_INTRO ile aynı olmalı. */
-.math-pin { height: 340vh; --intro: 0; }
-.math-pin .pin-inner { --q: clamp(0, calc((var(--p) - var(--intro)) / (1 - var(--intro))), 1); }
-.math-pin [data-stagger] > * { --t: clamp(0, calc(var(--q) * var(--n) * 1.4 - var(--i)), 1); }
+/* Matematik bölümü: ilk --intro kadarı denklem girişine (--k: 0 → 1), kalanı (--q: 0 → 1) yeteneklere ve
+   girdaba ayrılır. --intro, script.js'teki MATH_INTRO ile aynı olmalı. */
+.math-pin { height: 380vh; --intro: 0.3; }
+.math-pin .pin-inner {
+  --k: clamp(0, calc(var(--p) / var(--intro)), 1);
+  --q: clamp(0, calc((var(--p) - var(--intro)) / (1 - var(--intro))), 1);
+}
+/* Giriş bitene kadar başlık ve yetenekler görünmez; sonra hızla belirir */
+.math-pin .split { opacity: clamp(0, calc(var(--q) * 12), 1); }
+.math-pin .char { --c: clamp(0, calc(var(--q) * 3.6 * var(--n) - var(--i)), 1); }
+.math-pin .skills > * { --t: clamp(0, calc(var(--q) * var(--n) * 1.4 - var(--i)), 1); }
 .math-pin .flow-label { opacity: clamp(0, calc(var(--q) * 4 - 2), 1); }
 .math-pin .flow figcaption { opacity: var(--q); }
+
+/* Giriş: Navier–Stokes denklemi terim terim belirir, altına terimin adı yazılır; bölümün girişi bitince yukarı
+   kayıp solar. Sahne sabitlenmediğinde (--p: 1) hiç görünmez ve yer kaplamaz. */
+.math-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 0 24px;
+  pointer-events: none;
+  opacity: clamp(0, calc((1 - var(--k)) * 8), 1);
+  transform: translateY(calc(clamp(0, calc((var(--k) - 0.8) * 5), 1) * -40px));
+}
+.math-intro-box { text-align: center; }
+.math-intro-title {
+  margin: 0 0 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--muted);
+  opacity: clamp(0, calc(var(--k) * 12), 1);
+}
+.math-intro-terms { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 1.5rem 0.9rem; }
+/* Terimler girişin ilk dörtte üçünde sırayla gelir */
+.term {
+  --t: clamp(0, calc(var(--k) * 6 - var(--i) * 1.1), 1);
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
+  opacity: var(--t);
+  transform: translateY(calc((1 - var(--t)) * 26px));
+}
+/* Sabit yükseklik: kesirli ve kesirsiz terimler aynı çizgide durur, adları da aynı hizaya gelir */
+.term-math { display: flex; align-items: center; height: 2.5em; font-size: clamp(1.25rem, 4vw, 3rem); line-height: 1.2; color: var(--text); white-space: nowrap; }
+/* Terimin adı, terim yerine oturduktan sonra belirir; renkler mordan kırmızıya sıralanır */
+.term-name {
+  /* Genişliği sıfır, yazısı ortalı: uzun bir ad terimler arasındaki boşluğu açmaz */
+  display: flex;
+  justify-content: center;
+  width: 0;
+  white-space: nowrap;
+  font-size: clamp(0.7rem, 1.3vw, 0.9rem);
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--accent-2) calc(var(--i) / 3 * 100%), var(--accent));
+  opacity: clamp(0, calc(var(--k) * 6 - var(--i) * 1.1 - 0.7), 1);
+}
 
 
 .skills li {
   padding: 9px 18px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(191, 155, 255, 0.22);
   border-radius: 999px;
-  background: var(--surface);
+  background: linear-gradient(180deg, #17121f, #0d0b12);
   font-size: 0.98rem;
   opacity: var(--t);
   transform: translateY(calc((1 - var(--t)) * 28px));
@@ -466,7 +541,7 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 18px;
   background: var(--surface);
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 80px rgba(140, 80, 255, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   overflow: hidden;
   transform: perspective(1200px) rotateY(calc((1 - min(1, var(--p) * 1.6)) * 16deg));
 }
@@ -478,7 +553,7 @@ h1 {
 .code .line { opacity: var(--t); }
 .code .k { color: var(--accent); }
 .code .f { color: #ffffff; font-weight: 600; }
-.code .s { color: #a1a1a6; }
+.code .s { color: #ff9db1; }
 .code .c { color: var(--muted); }
 
 /* ---------- Projeler ---------- */
@@ -492,11 +567,11 @@ h1 {
 .card {
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: linear-gradient(180deg, #131315, #0a0a0b);
-  transition: border-color 0.3s;
+  background: linear-gradient(180deg, #15111c, #0a090c);
+  transition: border-color 0.3s, box-shadow 0.3s;
   display: flex;
 }
-.card:hover { border-color: rgba(255, 255, 255, 0.3); }
+.card:hover { border-color: rgba(191, 155, 255, 0.5); box-shadow: 0 20px 60px rgba(140, 80, 255, 0.14); }
 
 /* Başlığın altında soldan sağa uzayan ince çizgi */
 .rule {
@@ -504,7 +579,7 @@ h1 {
   height: 1px;
   /* Çizgi başlığa "ş", "ç" gibi harflerin kuyruğuna değmeyecek kadar uzak durur */
   margin: -0.25rem 0 2rem;
-  background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.25) 40%, transparent);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2) 35%, transparent);
   transform: scaleX(var(--e));
   transform-origin: left;
 }
@@ -533,7 +608,7 @@ h1 {
 .card-links { display: flex; flex-wrap: wrap; gap: 4px 28px; }
 /* Henüz yayında olmayan proje: bağlantı yerine soluk bir "Yakında" */
 .card-body .card-soon { font-weight: 500; color: var(--muted); }
-.card-link .arrow { display: inline-block; transition: transform 0.2s; }
+.card-link .arrow { display: inline-block; color: var(--accent); transition: transform 0.2s; }
 .card-link:hover .arrow { transform: translateX(4px); }
 
 .card-more { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 32px; text-align: center; text-decoration: none; font-weight: 600; }
@@ -560,7 +635,7 @@ h1 {
   border-bottom: 2px solid transparent;
   transition: border-color 0.2s;
 }
-.contact-mail:hover { border-color: var(--accent); }
+.contact-mail:hover { border-color: var(--accent-2); }
 /* E-posta adresi ekrana girerken klavyeyle yazılıyormuş gibi harf harf belirir; sonunda imleç yanıp söner */
 .contact-mail .char { --c: clamp(0, calc(var(--e) * 1.2 * var(--n) - var(--i)), 1); transform: none; }
 .contact-mail::after {
@@ -580,7 +655,7 @@ h1 {
   font-size: clamp(4rem, 19vw, 14rem);
   letter-spacing: -0.06em;
   margin-bottom: 0.5rem;
-  background: var(--silver);
+  background: var(--title);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -596,7 +671,7 @@ h1 {
 .site-footer p { margin: 0; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 4px 24px; }
 .site-footer a { padding: 4px 0; text-decoration: none; }
-.site-footer a:hover { color: var(--text); }
+.site-footer a:hover { color: var(--accent); }
 
 /* ---------- Hareket azaltma tercihi ya da kısa ekran ----------
    Kısa ekran: ör. yatay telefon ya da adres çubuğu yüzünden görünen alanı ~580 px'e inen 360×640 Android ve
@@ -612,6 +687,7 @@ h1 {
   .quotes { height: auto; display: grid; gap: 64px; }
   .quote, .quote:first-child, .quote:last-child { position: relative; opacity: 1; transform: none; }
   .quotes-pin .pin-inner::before { display: none; }
+  .math-intro { display: none; }
   .scroll-hint { display: none; }
   /* Helyosfer: çizim üstte, üç yazı altında alt alta */
   .helio-pin { height: auto; }
@@ -648,7 +724,7 @@ h1 {
   .code { white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: visible; }
   .split-reverse > :first-child { order: 2; }
   /* Dar ekranda yazılar formüllerin tam üstüne düşer; yazılar okunaklı kalsın diye formüller soluklaşır */
-  .formulas { --formula-color: rgba(255, 255, 255, 0.11); }
+  .formulas { --formula-color: rgba(214, 196, 255, 0.11); }
   /* Kartlar alt alta dizildiği için yandan kayarak gelmeleri ekrandan taşardı; yalnızca eğik hâlden doğrulurlar */
   .projects .card:nth-child(n) { --from: 0; }
   .rule { margin: 0 0 1.5rem; }
