@@ -36,7 +36,7 @@ Tek sayfalık, siyah ve sade ("premium") bir portfolyo. Kaydırdıkça sahne sah
 | – | Helyosfer nedir? | Canvas'ta ~640 tel (telefonda 300): Güneş rüzgârı → helyosfer → H. Üç kısa yazı. NASA'nın "Heliopause Cycle" videosu örnek alındı | Önce dokulu Güneş ve her yöne fırlayan parçacıklar (yanda hilal gezegen); kamera geri çekilir, Güneş noktaya iner, kuyruklu kabarcık açılır (sonlanma şoku halkaları, kuyruğa akan parçacıklar, nefes alan helyopoz); sonra teller sitenin simgesindeki H'ye dönüşür (simgeyle aynı oranlar; içinden izler akar, kenarları parlak gümüş, üzerinden çapraz ışık geçer, hafifçe salınır). Hareket azaltılınca helyosfer durur, yazılar alt alta |
 | 01 | Hakkımda | "Matematikçi. Yazılım geliştirici." | Kelimeler tek tek yanar |
 | 02 | İlham | Gauss, Galileo, Cantor, Hardy, Hilbert sözleri | Dev tırnak işaretinin içinden girilir; sözler sırayla değişir |
-| 03 | Matematik | Yetenekler + Navier–Stokes girdabı (Burgers girdabı) | Başlık yazılırken `y = x²` parabolü teğetiyle çizilir |
+| 03 | Matematik | Yetenekler + Navier–Stokes girdabı (Burgers girdabı) | — |
 | 04 | Yazılım | Kod penceresi + yetenekler | Pencere yandan döner, kod satır satır yazılır |
 | 05 | Projeler | Altı proje kartı (aşağıdaki tablo) + "Tüm projeler" (GitHub + Codeberg) | Başlık yazılır, çizgi çizilir, kartlar açılır |
 | 06 | İletişim | `mail@helyosfer.me` | Adres harf harf yazılır |
